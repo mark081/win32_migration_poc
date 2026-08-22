@@ -1,0 +1,48 @@
+# Architecture and rule ownership
+
+```text
+Win32 x86 client
+  |-- UI validation and confirmation
+  |-- NativeRules.dll (eligibility and tier limits)
+  |
+  +---- HTTP/JSON + X-Api-Key ----> .NET Framework 4.8 Windows service
+                                      |-- authorization
+                                      |-- idempotency
+                                      |-- workflow orchestration
+                                      |-- error mapping and audit context
+                                      |
+                                      +---- Npgsql ----> PostgreSQL 15
+                                                          |-- row locking
+                                                          |-- availability
+                                                          |-- conflicts
+                                                          |-- overdue blocks
+                                                          |-- fees and writes
+```
+
+## Why the rules are distributed
+
+This split is intentional. It demonstrates the maintenance and scaling constraints identified in the source assessment: users can encounter rules in a client, native library, service, and database. Client and DLL checks improve feedback but are never authoritative. Stored procedures repeat critical checks under row locks so a custom caller cannot bypass them.
+
+| Rule | UI | Native DLL | Service | Database |
+|---|---:|---:|---:|---:|
+| Required fields/date shape | Primary | | DTO validation | |
+| Tier checkout limit | Display | Primary precheck | Loads member state | Authoritative |
+| Maximum loan duration | Display | Primary precheck | Pass-through | Authoritative |
+| API authorization | | | Authoritative | |
+| Idempotent writes | | | Coordinates key | Authoritative unique record |
+| Tool availability/conflicts | Display only | | Error translation | Authoritative with locks |
+| Overdue-member block | Warning | Eligibility precheck | Loads status | Authoritative |
+| Late fee | Display result | | Orchestration | Authoritative calculation |
+| Audit trail | | | Supplies actor/request | Authoritative insert |
+
+## Deployment constraints
+
+- One site equals one service and one database.
+- All components are installed on or communicate over a local wired LAN with the server.
+- No multi-tenant partitioning, WAN hosting, failover, or centralized management is implemented.
+- The client and native DLL are x86. The service also targets x86 to demonstrate 32-bit dependency pressure.
+- PostgreSQL is the source of truth. Direct table access by clients is unsupported.
+
+## Failure behavior
+
+Database exceptions use stable `TLxxx` SQLSTATE codes. The API maps expected business failures to HTTP 409, validation failures to 400, authentication failures to 401, and unexpected failures to 500 with a correlation ID. A failed transaction writes no partial business state. Service restarts are safe because idempotency records live in PostgreSQL.

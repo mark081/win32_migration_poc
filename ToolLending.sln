@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "NativeRules", "src\NativeRules\NativeRules.vcxproj", "{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "DesktopClient", "src\DesktopClient\DesktopClient.vcxproj", "{A1909EC8-CA84-4117-A388-FA186374A702}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppServer", "src\AppServer\AppServer.csproj", "{67EFBE8C-626F-4268-8897-893FB059A803}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "NativeRulesTests", "tests\NativeRulesTests\NativeRulesTests.vcxproj", "{253B4C9D-D410-4C2A-B7AD-5F30C933B904}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}.Debug|x86.ActiveCfg = Debug|Win32
+		{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}.Debug|x86.Build.0 = Debug|Win32
+		{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}.Release|x86.ActiveCfg = Release|Win32
+		{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}.Release|x86.Build.0 = Release|Win32
+		{A1909EC8-CA84-4117-A388-FA186374A702}.Debug|x86.ActiveCfg = Debug|Win32
+		{A1909EC8-CA84-4117-A388-FA186374A702}.Debug|x86.Build.0 = Debug|Win32
+		{A1909EC8-CA84-4117-A388-FA186374A702}.Release|x86.ActiveCfg = Release|Win32
+		{A1909EC8-CA84-4117-A388-FA186374A702}.Release|x86.Build.0 = Release|Win32
+		{67EFBE8C-626F-4268-8897-893FB059A803}.Debug|x86.ActiveCfg = Debug|x86
+		{67EFBE8C-626F-4268-8897-893FB059A803}.Debug|x86.Build.0 = Debug|x86
+		{67EFBE8C-626F-4268-8897-893FB059A803}.Release|x86.ActiveCfg = Release|x86
+		{67EFBE8C-626F-4268-8897-893FB059A803}.Release|x86.Build.0 = Release|x86
+		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Debug|x86.ActiveCfg = Debug|Win32
+		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Debug|x86.Build.0 = Debug|Win32
+		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Release|x86.ActiveCfg = Release|Win32
+		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+EndGlobal

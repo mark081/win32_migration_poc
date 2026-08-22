@@ -1,0 +1,2 @@
+using System.Web.Http; using Newtonsoft.Json.Serialization; using Owin;
+namespace ToolLending.AppServer { public sealed class Startup { public void Configuration(IAppBuilder app){var c=new HttpConfiguration();c.MessageHandlers.Add(new ApiKeyHandler());c.MapHttpAttributeRoutes();c.Formatters.Remove(c.Formatters.XmlFormatter);c.Formatters.JsonFormatter.SerializerSettings.ContractResolver=new CamelCasePropertyNamesContractResolver();c.Formatters.JsonFormatter.SerializerSettings.DateFormatString="yyyy-MM-dd";app.UseWebApi(c);} } }

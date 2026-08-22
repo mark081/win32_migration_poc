@@ -1,0 +1,13 @@
+.vs/
+.DS_Store
+.vscode/*.log
+packages/
+artifacts/
+**/Debug/
+**/Release/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.log
+backups/
