@@ -38,6 +38,7 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 ## Deployment constraints
 
 - One site equals one service and one database.
+- Windows 11 Pro x64 is supported as a development and demonstration host; Windows Server 2019 remains the deployment reference.
 - All components are installed on or communicate over a local wired LAN with the server.
 - No multi-tenant partitioning, WAN hosting, failover, or centralized management is implemented.
 - The client and native DLL are x86. The service also targets x86 to demonstrate 32-bit dependency pressure.

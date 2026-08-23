@@ -1,3 +1,12 @@
 {
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "files.exclude": {
+        "**/.vs": true,
+        "**/artifacts": true,
+        "**/packages": true
+    },
+    "search.exclude": {
+        "**/artifacts": true,
+        "**/packages": true
+    }
 }

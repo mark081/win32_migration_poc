@@ -1,5 +1,7 @@
 # Windows Server 2019 setup
 
+This is the deployment-like workflow. For local or remote development on Windows 11 Pro, including VS Code tasks and debugging, see [Windows 11 Pro development setup](windows-11-pro-setup.md).
+
 ## Exact prerequisites
 
 - Windows Server 2019 Standard or Datacenter, Desktop Experience, fully patched
