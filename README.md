@@ -2,12 +2,12 @@
 
 This repository is a deliberately legacy-shaped, single-site client/server application used to demonstrate a staged modernization journey:
 
-1. **Current** — the on-premises legacy baseline documented here.
+1. **Legacy** — the on-premises legacy baseline documented here.
 2. **Connected** — the existing product connected to centralized services without replacing the core application.
 3. **Hybrid** — selected capabilities moved to cloud services while local operation remains supported.
 4. **SaaS** — a centrally operated, multi-tenant cloud product.
 
-The application manages community-library tools, members, reservations, checkouts, returns, and late fees. It mirrors the architectural constraints described in the West Monroe Eaglesoft assessment without copying the dental domain or imaging features. It is an architecture demonstration, not a recommended greenfield design.
+The application manages community-library tools, members, reservations, checkouts, returns, and late fees. It mirrors the architectural constraints described in the assessment without copying the domain or imaging features. It is an architecture demonstration, not a recommended greenfield design.
 
 > **Current repository state:** this README describes the legacy baseline. The `main` branch preserves that baseline; modernization work begins on the `connected` branch.
 
