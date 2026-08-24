@@ -27,13 +27,17 @@ namespace ToolLending.AppServer
 
         protected Guid Key()
         {
-            if (!Request.Headers.TryGetValues("Idempotency-Key", out var v)
-                || !Guid.TryParse(v.First(), out var g))
+            if (
+                !Request.Headers.TryGetValues("Idempotency-Key", out var v)
+                || !Guid.TryParse(v.First(), out var g)
+            )
             {
                 throw new HttpResponseException(
                     Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
-                        "Idempotency-Key must be a UUID."));
+                        "Idempotency-Key must be a UUID."
+                    )
+                );
             }
 
             return g;
@@ -50,15 +54,14 @@ namespace ToolLending.AppServer
             catch (PostgresException e) when (e.SqlState.StartsWith("TL"))
             {
                 return Content(
-                    e.SqlState == "TL404"
-                        ? HttpStatusCode.NotFound
-                        : HttpStatusCode.Conflict,
+                    e.SqlState == "TL404" ? HttpStatusCode.NotFound : HttpStatusCode.Conflict,
                     new
                     {
                         code = e.SqlState,
                         message = e.MessageText,
-                        requestId = request
-                    });
+                        requestId = request,
+                    }
+                );
             }
             catch (InvalidOperationException e)
             {
@@ -68,16 +71,18 @@ namespace ToolLending.AppServer
                     {
                         code = "IDEMPOTENCY_CONFLICT",
                         message = e.Message,
-                        requestId = request
-                    });
+                        requestId = request,
+                    }
+                );
             }
             catch (Exception e)
             {
-                 Console.Error.WriteLine(
+                Console.Error.WriteLine(
                     "Request {0} failed:{1}{2}",
                     request,
                     Environment.NewLine,
-                    e);
+                    e
+                );
 
                 return Content(
                     HttpStatusCode.InternalServerError,
@@ -85,8 +90,9 @@ namespace ToolLending.AppServer
                     {
                         code = "UNEXPECTED",
                         message = "The operation failed.",
-                        requestId = request
-                    });                
+                        requestId = request,
+                    }
+                );
                 // return Content(
                 //     HttpStatusCode.InternalServerError,
                 //     new
@@ -199,7 +205,8 @@ namespace ToolLending.AppServer
             {
                 return Content(
                     HttpStatusCode.ServiceUnavailable,
-                    new { status = "database-unavailable" });
+                    new { status = "database-unavailable" }
+                );
             }
         }
     }
