@@ -321,6 +321,23 @@ flowchart LR
 
 The test suite covers native rule calculations, database routines, API health and authentication, idempotent checkout replay, business conflicts, late fees, audit creation, and competing concurrent checkouts.
 
+## Code formatting
+
+Repository formatting is controlled by `.editorconfig`, `.clang-format`, `.csharpierrc.json`, and
+`PSScriptAnalyzerSettings.psd1`. Restore the repository-local .NET tools and format the supported
+source and project files with:
+
+```powershell
+dotnet tool restore
+.\scripts\Format-Code.ps1
+```
+
+Use `.\scripts\Format-Code.ps1 -Check` in CI or before committing. The script requires
+`clang-format` 17 or newer, NuGet, and PowerShell 5.1; it restores CSharpier and
+PSScriptAnalyzer automatically when necessary. SQL is kept in the same four-space,
+statement-per-block style manually because the PostgreSQL routines contain PL/pgSQL and `psql`
+metacommands that generic SQL formatters can alter incorrectly.
+
 ## Failure and recovery behavior
 
 - Business writes use serializable database transactions; a failed operation leaves no partial business state.

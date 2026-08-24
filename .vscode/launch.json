@@ -1,23 +1,27 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Debug Win32 client (x86)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}\\artifacts\\x86\\Debug\\ToolLendingClient.exe",
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "environment": []
-        },
-        {
-            "name": "Debug native rules tests (x86)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}\\artifacts\\x86\\Debug\\NativeRulesTests.exe",
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "environment": []
-        }
-    ]
+    "version":  "0.2.0",
+    "configurations":  [
+                           {
+                               "name":  "Debug Win32 client (x86)",
+                               "type":  "cppvsdbg",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}\\artifacts\\x86\\Debug\\ToolLendingClient.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "stopAtEntry":  false,
+                               "environment":  [
+
+                                               ]
+                           },
+                           {
+                               "name":  "Debug native rules tests (x86)",
+                               "type":  "cppvsdbg",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}\\artifacts\\x86\\Debug\\NativeRulesTests.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "stopAtEntry":  false,
+                               "environment":  [
+
+                                               ]
+                           }
+                       ]
 }

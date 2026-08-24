@@ -1,95 +1,125 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Prerequisites: Check",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", "${workspaceFolder}\\scripts\\Setup-Prerequisites.ps1"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Database: Initialize",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", "${workspaceFolder}\\scripts\\Initialize-Database.ps1"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Build: Debug x86",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", "${workspaceFolder}\\scripts\\Build.ps1",
-                "-Configuration", "Debug"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "Build: Release x86",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", "${workspaceFolder}\\scripts\\Build.ps1",
-                "-Configuration", "Release"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "API: Run console (Debug)",
-            "type": "shell",
-            "command": "${workspaceFolder}\\artifacts\\x86\\Debug\\AppServer.exe",
-            "args": ["--console"],
-            "options": { "cwd": "${workspaceFolder}" },
-            "dependsOn": "Build: Debug x86",
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "group": "tool-lending-api",
-                "showReuseMessage": true
-            }
-        },
-        {
-            "label": "Client: Run (Debug)",
-            "type": "process",
-            "command": "${workspaceFolder}\\artifacts\\x86\\Debug\\ToolLendingClient.exe",
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "group": "tool-lending-client"
-            }
-        },
-        {
-            "label": "Tests: All (Release)",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", "${workspaceFolder}\\scripts\\Run-Tests.ps1",
-                "-Configuration", "Release"
-            ],
-            "dependsOn": "Build: Release x86",
-            "group": { "kind": "test", "isDefault": true },
-            "problemMatcher": []
-        }
-    ]
+    "version":  "2.0.0",
+    "tasks":  [
+                  {
+                      "label":  "Prerequisites: Check",
+                      "type":  "shell",
+                      "command":  "powershell.exe",
+                      "args":  [
+                                   "-NoProfile",
+                                   "-ExecutionPolicy",
+                                   "Bypass",
+                                   "-File",
+                                   "${workspaceFolder}\\scripts\\Setup-Prerequisites.ps1"
+                               ],
+                      "problemMatcher":  [
+
+                                         ]
+                  },
+                  {
+                      "label":  "Database: Initialize",
+                      "type":  "shell",
+                      "command":  "powershell.exe",
+                      "args":  [
+                                   "-NoProfile",
+                                   "-ExecutionPolicy",
+                                   "Bypass",
+                                   "-File",
+                                   "${workspaceFolder}\\scripts\\Initialize-Database.ps1"
+                               ],
+                      "problemMatcher":  [
+
+                                         ]
+                  },
+                  {
+                      "label":  "Build: Debug x86",
+                      "type":  "shell",
+                      "command":  "powershell.exe",
+                      "args":  [
+                                   "-NoProfile",
+                                   "-ExecutionPolicy",
+                                   "Bypass",
+                                   "-File",
+                                   "${workspaceFolder}\\scripts\\Build.ps1",
+                                   "-Configuration",
+                                   "Debug"
+                               ],
+                      "group":  {
+                                    "kind":  "build",
+                                    "isDefault":  true
+                                },
+                      "problemMatcher":  "$msCompile"
+                  },
+                  {
+                      "label":  "Build: Release x86",
+                      "type":  "shell",
+                      "command":  "powershell.exe",
+                      "args":  [
+                                   "-NoProfile",
+                                   "-ExecutionPolicy",
+                                   "Bypass",
+                                   "-File",
+                                   "${workspaceFolder}\\scripts\\Build.ps1",
+                                   "-Configuration",
+                                   "Release"
+                               ],
+                      "problemMatcher":  "$msCompile"
+                  },
+                  {
+                      "label":  "API: Run console (Debug)",
+                      "type":  "shell",
+                      "command":  "${workspaceFolder}\\artifacts\\x86\\Debug\\AppServer.exe",
+                      "args":  [
+                                   "--console"
+                               ],
+                      "options":  {
+                                      "cwd":  "${workspaceFolder}"
+                                  },
+                      "dependsOn":  "Build: Debug x86",
+                      "problemMatcher":  [
+
+                                         ],
+                      "presentation":  {
+                                           "reveal":  "always",
+                                           "panel":  "dedicated",
+                                           "group":  "tool-lending-api",
+                                           "showReuseMessage":  true
+                                       }
+                  },
+                  {
+                      "label":  "Client: Run (Debug)",
+                      "type":  "process",
+                      "command":  "${workspaceFolder}\\artifacts\\x86\\Debug\\ToolLendingClient.exe",
+                      "problemMatcher":  [
+
+                                         ],
+                      "presentation":  {
+                                           "reveal":  "always",
+                                           "panel":  "dedicated",
+                                           "group":  "tool-lending-client"
+                                       }
+                  },
+                  {
+                      "label":  "Tests: All (Release)",
+                      "type":  "shell",
+                      "command":  "powershell.exe",
+                      "args":  [
+                                   "-NoProfile",
+                                   "-ExecutionPolicy",
+                                   "Bypass",
+                                   "-File",
+                                   "${workspaceFolder}\\scripts\\Run-Tests.ps1",
+                                   "-Configuration",
+                                   "Release"
+                               ],
+                      "dependsOn":  "Build: Release x86",
+                      "group":  {
+                                    "kind":  "test",
+                                    "isDefault":  true
+                                },
+                      "problemMatcher":  [
+
+                                         ]
+                  }
+              ]
 }

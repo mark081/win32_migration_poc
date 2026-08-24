@@ -12,9 +12,9 @@ namespace ToolLending.AppServer
 {
     public sealed class Repository
     {
-        private readonly string connectionString =
-            ConfigurationManager.ConnectionStrings["ToolLending"]
-                .ConnectionString;
+        private readonly string connectionString = ConfigurationManager
+            .ConnectionStrings["ToolLending"]
+            .ConnectionString;
 
         private NpgsqlConnection Open()
         {
@@ -28,8 +28,9 @@ namespace ToolLending.AppServer
             var tools = new List<ToolDto>();
 
             using (var connection = Open())
-            using (var command = new NpgsqlCommand(
-                @"SELECT
+            using (
+                var command = new NpgsqlCommand(
+                    @"SELECT
                       t.tool_id,
                       t.asset_tag,
                       t.display_name,
@@ -46,7 +47,9 @@ namespace ToolLending.AppServer
                   LEFT JOIN tool_lending.members m
                     ON m.member_id = l.member_id
                   ORDER BY t.tool_id",
-                connection))
+                    connection
+                )
+            )
             using (var reader = command.ExecuteReader())
             {
                 while (reader.Read())
@@ -61,9 +64,12 @@ namespace ToolLending.AppServer
                             Status = reader.GetString(4),
                             Version = reader.GetInt32(5),
                             LoanId = reader.IsDBNull(6) ? (long?)null : reader.GetInt64(6),
-                            BorrowedByMemberId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
-                            BorrowedBy = reader.IsDBNull(8) ? null : reader.GetString(8)
-                        });
+                            BorrowedByMemberId = reader.IsDBNull(7)
+                                ? (int?)null
+                                : reader.GetInt32(7),
+                            BorrowedBy = reader.IsDBNull(8) ? null : reader.GetString(8),
+                        }
+                    );
                 }
             }
 
@@ -72,7 +78,8 @@ namespace ToolLending.AppServer
 
         public MemberDto GetMember(int id)
         {
-            const string sql = @"
+            const string sql =
+                @"
                 SELECT
                     m.member_id,
                     m.display_name,
@@ -92,9 +99,7 @@ namespace ToolLending.AppServer
             using (var connection = Open())
             using (var command = new NpgsqlCommand(sql, connection))
             {
-                command.Parameters
-                    .Add("id", NpgsqlDbType.Integer)
-                    .Value = id;
+                command.Parameters.Add("id", NpgsqlDbType.Integer).Value = id;
 
                 MemberDto member;
                 using (var reader = command.ExecuteReader())
@@ -113,11 +118,12 @@ namespace ToolLending.AppServer
                         OpenLoans = reader.GetInt32(4),
                         HasOverdueLoan = reader.GetBoolean(5),
                         CheckoutLimit = reader.GetInt32(6),
-                        MaxLoanDays = reader.GetInt32(7)
+                        MaxLoanDays = reader.GetInt32(7),
                     };
                 }
 
-                const string loansSql = @"
+                const string loansSql =
+                    @"
                     SELECT l.loan_id, t.tool_id, t.asset_tag, t.display_name, l.due_on
                     FROM tool_lending.loans l
                     JOIN tool_lending.tools t ON t.tool_id = l.tool_id
@@ -131,14 +137,16 @@ namespace ToolLending.AppServer
                     {
                         while (reader.Read())
                         {
-                            member.OutstandingLoans.Add(new OutstandingLoanDto
-                            {
-                                LoanId = reader.GetInt64(0),
-                                ToolId = reader.GetInt32(1),
-                                AssetTag = reader.GetString(2),
-                                Tool = reader.GetString(3),
-                                DueOn = reader.GetDateTime(4)
-                            });
+                            member.OutstandingLoans.Add(
+                                new OutstandingLoanDto
+                                {
+                                    LoanId = reader.GetInt64(0),
+                                    ToolId = reader.GetInt32(1),
+                                    AssetTag = reader.GetString(2),
+                                    Tool = reader.GetString(3),
+                                    DueOn = reader.GetDateTime(4),
+                                }
+                            );
                         }
                     }
                 }
@@ -149,7 +157,8 @@ namespace ToolLending.AppServer
 
         public IList<AuditDto> GetAudit(int take)
         {
-            const string sql = @"
+            const string sql =
+                @"
                 SELECT
                     audit_id,
                     occurred_at,
@@ -168,9 +177,10 @@ namespace ToolLending.AppServer
             using (var connection = Open())
             using (var command = new NpgsqlCommand(sql, connection))
             {
-                command.Parameters
-                    .Add("take", NpgsqlDbType.Integer)
-                    .Value = Math.Min(Math.Max(take, 1), 500);
+                command.Parameters.Add("take", NpgsqlDbType.Integer).Value = Math.Min(
+                    Math.Max(take, 1),
+                    500
+                );
 
                 using (var reader = command.ExecuteReader())
                 {
@@ -186,8 +196,9 @@ namespace ToolLending.AppServer
                                 EntityType = reader.GetString(4),
                                 EntityId = reader.GetString(5),
                                 RequestId = reader.GetGuid(6),
-                                Details = reader.GetString(7)
-                            });
+                                Details = reader.GetString(7),
+                            }
+                        );
                     }
                 }
             }
@@ -199,9 +210,11 @@ namespace ToolLending.AppServer
             ReservationRequest reservation,
             string actor,
             Guid requestId,
-            Guid idempotencyKey)
+            Guid idempotencyKey
+        )
         {
-            const string sql = @"
+            const string sql =
+                @"
                 SELECT
                     reservation_id,
                     status::text,
@@ -233,16 +246,20 @@ namespace ToolLending.AppServer
                         default(DateTime),
                         0,
                         actor,
-                        requestId));
+                        requestId
+                    )
+            );
         }
 
         public WriteResult Checkout(
             CheckoutRequest checkout,
             string actor,
             Guid requestId,
-            Guid idempotencyKey)
+            Guid idempotencyKey
+        )
         {
-            const string sql = @"
+            const string sql =
+                @"
                 SELECT
                     loan_id,
                     status::text,
@@ -273,16 +290,20 @@ namespace ToolLending.AppServer
                         checkout.DueOn,
                         0,
                         actor,
-                        requestId));
+                        requestId
+                    )
+            );
         }
 
         public WriteResult Return(
             ReturnRequest returnRequest,
             string actor,
             Guid requestId,
-            Guid idempotencyKey)
+            Guid idempotencyKey
+        )
         {
-            const string sql = @"
+            const string sql =
+                @"
                 SELECT
                     loan_id,
                     'RETURNED',
@@ -311,7 +332,9 @@ namespace ToolLending.AppServer
                         default(DateTime),
                         returnRequest.LoanId,
                         actor,
-                        requestId));
+                        requestId
+                    )
+            );
         }
 
         private WriteResult Execute(
@@ -319,16 +342,16 @@ namespace ToolLending.AppServer
             Guid idempotencyKey,
             object payload,
             Guid requestId,
-            Func<NpgsqlConnection, NpgsqlTransaction, WriteResult> work)
+            Func<NpgsqlConnection, NpgsqlTransaction, WriteResult> work
+        )
         {
-            var requestHash = Hash(
-                JsonConvert.SerializeObject(payload));
+            var requestHash = Hash(JsonConvert.SerializeObject(payload));
 
             using (var connection = Open())
-            using (var transaction = connection.BeginTransaction(
-                IsolationLevel.Serializable))
+            using (var transaction = connection.BeginTransaction(IsolationLevel.Serializable))
             {
-                const string existingSql = @"
+                const string existingSql =
+                    @"
                     SELECT
                         request_hash,
                         response_json::text
@@ -337,18 +360,12 @@ namespace ToolLending.AppServer
                       AND idempotency_key = @key
                     FOR UPDATE";
 
-                using (var command = new NpgsqlCommand(
-                    existingSql,
-                    connection,
-                    transaction))
+                WriteResult previousResult = null;
+                using (var command = new NpgsqlCommand(existingSql, connection, transaction))
                 {
-                    command.Parameters
-                        .Add("operation", NpgsqlDbType.Varchar)
-                        .Value = operation;
+                    command.Parameters.Add("operation", NpgsqlDbType.Varchar).Value = operation;
 
-                    command.Parameters
-                        .Add("key", NpgsqlDbType.Uuid)
-                        .Value = idempotencyKey;
+                    command.Parameters.Add("key", NpgsqlDbType.Uuid).Value = idempotencyKey;
 
                     using (var reader = command.ExecuteReader())
                     {
@@ -357,23 +374,28 @@ namespace ToolLending.AppServer
                             if (reader.GetString(0) != requestHash)
                             {
                                 throw new InvalidOperationException(
-                                    "Idempotency key reused with a different request.");
+                                    "Idempotency key reused with a different request."
+                                );
                             }
 
-                            var previousResult =
-                                JsonConvert.DeserializeObject<WriteResult>(
-                                    reader.GetString(1));
-
-                            transaction.Commit();
-                            return previousResult;
+                            previousResult = JsonConvert.DeserializeObject<WriteResult>(
+                                reader.GetString(1)
+                            );
                         }
                     }
+                }
+
+                if (previousResult != null)
+                {
+                    transaction.Commit();
+                    return previousResult;
                 }
 
                 var result = work(connection, transaction);
                 result.RequestId = requestId;
 
-                const string insertSql = @"
+                const string insertSql =
+                    @"
                     INSERT INTO tool_lending.idempotency_records
                     (
                         operation,
@@ -391,26 +413,16 @@ namespace ToolLending.AppServer
                         200
                     )";
 
-                using (var command = new NpgsqlCommand(
-                    insertSql,
-                    connection,
-                    transaction))
+                using (var command = new NpgsqlCommand(insertSql, connection, transaction))
                 {
-                    command.Parameters
-                        .Add("operation", NpgsqlDbType.Varchar)
-                        .Value = operation;
+                    command.Parameters.Add("operation", NpgsqlDbType.Varchar).Value = operation;
 
-                    command.Parameters
-                        .Add("key", NpgsqlDbType.Uuid)
-                        .Value = idempotencyKey;
+                    command.Parameters.Add("key", NpgsqlDbType.Uuid).Value = idempotencyKey;
 
-                    command.Parameters
-                        .Add("hash", NpgsqlDbType.Char)
-                        .Value = requestHash;
+                    command.Parameters.Add("hash", NpgsqlDbType.Char).Value = requestHash;
 
-                    command.Parameters
-                        .Add("json", NpgsqlDbType.Text)
-                        .Value = JsonConvert.SerializeObject(result);
+                    command.Parameters.Add("json", NpgsqlDbType.Text).Value =
+                        JsonConvert.SerializeObject(result);
 
                     command.ExecuteNonQuery();
                 }
@@ -431,84 +443,61 @@ namespace ToolLending.AppServer
             DateTime due,
             long loan,
             string actor,
-            Guid requestId)
+            Guid requestId
+        )
         {
-            using (var command = new NpgsqlCommand(
-                sql,
-                connection,
-                transaction))
+            using (var command = new NpgsqlCommand(sql, connection, transaction))
             {
                 if (sql.Contains("@tool"))
                 {
-                    command.Parameters
-                        .Add("tool", NpgsqlDbType.Integer)
-                        .Value = tool;
+                    command.Parameters.Add("tool", NpgsqlDbType.Integer).Value = tool;
                 }
 
                 if (sql.Contains("@member"))
                 {
-                    command.Parameters
-                        .Add("member", NpgsqlDbType.Integer)
-                        .Value = member;
+                    command.Parameters.Add("member", NpgsqlDbType.Integer).Value = member;
                 }
 
                 if (sql.Contains("@start"))
                 {
-                    command.Parameters
-                        .Add("start", NpgsqlDbType.Date)
-                        .Value = start.Date;
+                    command.Parameters.Add("start", NpgsqlDbType.Date).Value = start.Date;
                 }
 
                 if (sql.Contains("@end"))
                 {
-                    command.Parameters
-                        .Add("end", NpgsqlDbType.Date)
-                        .Value = end.Date;
+                    command.Parameters.Add("end", NpgsqlDbType.Date).Value = end.Date;
                 }
 
                 if (sql.Contains("@due"))
                 {
-                    command.Parameters
-                        .Add("due", NpgsqlDbType.Date)
-                        .Value = due.Date;
+                    command.Parameters.Add("due", NpgsqlDbType.Date).Value = due.Date;
                 }
 
                 if (sql.Contains("@loan"))
                 {
-                    command.Parameters
-                        .Add("loan", NpgsqlDbType.Bigint)
-                        .Value = loan;
+                    command.Parameters.Add("loan", NpgsqlDbType.Bigint).Value = loan;
                 }
 
-                command.Parameters
-                    .Add("actor", NpgsqlDbType.Varchar)
-                    .Value = actor;
+                command.Parameters.Add("actor", NpgsqlDbType.Varchar).Value = actor;
 
-                command.Parameters
-                    .Add("request", NpgsqlDbType.Uuid)
-                    .Value = requestId;
+                command.Parameters.Add("request", NpgsqlDbType.Uuid).Value = requestId;
 
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read())
                     {
                         throw new InvalidOperationException(
-                            "The database operation returned no result.");
+                            "The database operation returned no result."
+                        );
                     }
 
                     return new WriteResult
                     {
                         Id = reader.GetInt64(0),
                         Status = reader.GetString(1),
-                        DueOn = reader.IsDBNull(2)
-                            ? (DateTime?)null
-                            : reader.GetDateTime(2),
-                        ReturnedAt = reader.IsDBNull(3)
-                            ? (DateTime?)null
-                            : reader.GetDateTime(3),
-                        LateFee = reader.IsDBNull(4)
-                            ? (decimal?)null
-                            : reader.GetDecimal(4)
+                        DueOn = reader.IsDBNull(2) ? (DateTime?)null : reader.GetDateTime(2),
+                        ReturnedAt = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3),
+                        LateFee = reader.IsDBNull(4) ? (decimal?)null : reader.GetDecimal(4),
                     };
                 }
             }
@@ -521,10 +510,7 @@ namespace ToolLending.AppServer
                 var bytes = Encoding.UTF8.GetBytes(value);
                 var hash = sha256.ComputeHash(bytes);
 
-                return BitConverter
-                    .ToString(hash)
-                    .Replace("-", string.Empty)
-                    .ToLowerInvariant();
+                return BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
             }
         }
     }

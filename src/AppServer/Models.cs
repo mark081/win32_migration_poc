@@ -1,2 +1,90 @@
-using System; using System.ComponentModel.DataAnnotations;
-namespace ToolLending.AppServer { public sealed class ReservationRequest{[Range(1,int.MaxValue)]public int ToolId{get;set;}[Range(1,int.MaxValue)]public int MemberId{get;set;}public DateTime StartsOn{get;set;}public DateTime EndsOn{get;set;}} public sealed class CheckoutRequest{[Range(1,int.MaxValue)]public int ToolId{get;set;}[Range(1,int.MaxValue)]public int MemberId{get;set;}public DateTime DueOn{get;set;}} public sealed class ReturnRequest{[Range(1,long.MaxValue)]public long LoanId{get;set;}} public sealed class ToolDto{public int ToolId;public string AssetTag;public string DisplayName;public decimal DailyLateFee;public string Status;public int Version;public long? LoanId;public int? BorrowedByMemberId;public string BorrowedBy;} public sealed class OutstandingLoanDto{public long LoanId;public int ToolId;public string AssetTag;public string Tool;public DateTime DueOn;} public sealed class MemberDto{public int MemberId;public string DisplayName;public string Tier;public bool Active;public int OpenLoans;public bool HasOverdueLoan;public int CheckoutLimit;public int MaxLoanDays;public System.Collections.Generic.IList<OutstandingLoanDto> OutstandingLoans=new System.Collections.Generic.List<OutstandingLoanDto>();} public sealed class WriteResult{public long Id;public string Status;public DateTime? DueOn;public DateTime? ReturnedAt;public decimal? LateFee;public Guid RequestId;} public sealed class AuditDto{public long AuditId;public DateTime OccurredAt;public string Actor;public string Operation;public string EntityType;public string EntityId;public Guid RequestId;public string Details;} }
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace ToolLending.AppServer
+{
+    public sealed class ReservationRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int ToolId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int MemberId { get; set; }
+        public DateTime StartsOn { get; set; }
+        public DateTime EndsOn { get; set; }
+    }
+
+    public sealed class CheckoutRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int ToolId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int MemberId { get; set; }
+        public DateTime DueOn { get; set; }
+    }
+
+    public sealed class ReturnRequest
+    {
+        [Range(1, long.MaxValue)]
+        public long LoanId { get; set; }
+    }
+
+    public sealed class ToolDto
+    {
+        public int ToolId;
+        public string AssetTag;
+        public string DisplayName;
+        public decimal DailyLateFee;
+        public string Status;
+        public int Version;
+        public long? LoanId;
+        public int? BorrowedByMemberId;
+        public string BorrowedBy;
+    }
+
+    public sealed class OutstandingLoanDto
+    {
+        public long LoanId;
+        public int ToolId;
+        public string AssetTag;
+        public string Tool;
+        public DateTime DueOn;
+    }
+
+    public sealed class MemberDto
+    {
+        public int MemberId;
+        public string DisplayName;
+        public string Tier;
+        public bool Active;
+        public int OpenLoans;
+        public bool HasOverdueLoan;
+        public int CheckoutLimit;
+        public int MaxLoanDays;
+        public System.Collections.Generic.IList<OutstandingLoanDto> OutstandingLoans =
+            new System.Collections.Generic.List<OutstandingLoanDto>();
+    }
+
+    public sealed class WriteResult
+    {
+        public long Id;
+        public string Status;
+        public DateTime? DueOn;
+        public DateTime? ReturnedAt;
+        public decimal? LateFee;
+        public Guid RequestId;
+    }
+
+    public sealed class AuditDto
+    {
+        public long AuditId;
+        public DateTime OccurredAt;
+        public string Actor;
+        public string Operation;
+        public string EntityType;
+        public string EntityId;
+        public Guid RequestId;
+        public string Details;
+    }
+}

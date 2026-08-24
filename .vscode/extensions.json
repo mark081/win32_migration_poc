@@ -1,7 +1,7 @@
 {
-    "recommendations": [
-        "ms-vscode.cpptools",
-        "ms-dotnettools.csharp",
-        "ms-vscode.powershell"
-    ]
+    "recommendations":  [
+                            "ms-vscode.cpptools",
+                            "ms-dotnettools.csharp",
+                            "ms-vscode.powershell"
+                        ]
 }
