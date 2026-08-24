@@ -1,16 +1,491 @@
-using System; using System.Collections.Generic; using System.Configuration; using System.Data; using System.Security.Cryptography; using System.Text; using Newtonsoft.Json; using Npgsql;
-namespace ToolLending.AppServer {
- public sealed class Repository {
-  readonly string cs=ConfigurationManager.ConnectionStrings["ToolLending"].ConnectionString;
-  NpgsqlConnection Open(){var c=new NpgsqlConnection(cs);c.Open();return c;}
-  public IList<ToolDto> GetTools(){var x=new List<ToolDto>();using(var c=Open())using(var q=new NpgsqlCommand("SELECT tool_id,asset_tag,display_name,daily_late_fee,status::text,version FROM tool_lending.tools ORDER BY tool_id",c))using(var d=q.ExecuteReader())while(d.Read())x.Add(new ToolDto{ToolId=d.GetInt32(0),AssetTag=d.GetString(1),DisplayName=d.GetString(2),DailyLateFee=d.GetDecimal(3),Status=d.GetString(4),Version=d.GetInt32(5)});return x;}
-  public MemberDto GetMember(int id){using(var c=Open())using(var q=new NpgsqlCommand(@"SELECT m.member_id,m.display_name,m.tier::text,m.active,count(l.loan_id)::int,coalesce(bool_or(l.due_on<CURRENT_DATE),false),tool_lending.tier_checkout_limit(m.tier),tool_lending.tier_max_loan_days(m.tier) FROM tool_lending.members m LEFT JOIN tool_lending.loans l ON l.member_id=m.member_id AND l.status='OPEN' WHERE m.member_id=@id GROUP BY m.member_id",c)){q.Parameters.AddWithValue("id",id);using(var d=q.ExecuteReader()){if(!d.Read())return null;return new MemberDto{MemberId=d.GetInt32(0),DisplayName=d.GetString(1),Tier=d.GetString(2),Active=d.GetBoolean(3),OpenLoans=d.GetInt32(4),HasOverdueLoan=d.GetBoolean(5),CheckoutLimit=d.GetInt32(6),MaxLoanDays=d.GetInt32(7)};}}}
-  public IList<AuditDto> GetAudit(int take){var x=new List<AuditDto>();using(var c=Open())using(var q=new NpgsqlCommand("SELECT audit_id,occurred_at,actor,operation,entity_type,entity_id,request_id,details::text FROM tool_lending.audit_log ORDER BY audit_id DESC LIMIT @n",c)){q.Parameters.AddWithValue("n",Math.Min(Math.Max(take,1),500));using(var d=q.ExecuteReader())while(d.Read())x.Add(new AuditDto{AuditId=d.GetInt64(0),OccurredAt=d.GetDateTime(1),Actor=d.GetString(2),Operation=d.GetString(3),EntityType=d.GetString(4),EntityId=d.GetString(5),RequestId=d.GetGuid(6),Details=d.GetString(7)});}return x;}
-  public WriteResult Reserve(ReservationRequest x,string actor,Guid request,Guid key)=>Execute("reserve",key,x,request,(c,t)=>Call(c,t,"SELECT reservation_id,status::text,NULL::date,NULL::timestamptz,NULL::numeric FROM tool_lending.reserve_tool(@tool,@member,@start,@end,@actor,@request)",x.ToolId,x.MemberId,x.StartsOn,x.EndsOn,default(DateTime),0,actor,request));
-  public WriteResult Checkout(CheckoutRequest x,string actor,Guid request,Guid key)=>Execute("checkout",key,x,request,(c,t)=>Call(c,t,"SELECT loan_id,status::text,due_on,NULL::timestamptz,NULL::numeric FROM tool_lending.checkout_tool(@tool,@member,@due,@actor,@request)",x.ToolId,x.MemberId,default(DateTime),default(DateTime),x.DueOn,0,actor,request));
-  public WriteResult Return(ReturnRequest x,string actor,Guid request,Guid key)=>Execute("return",key,x,request,(c,t)=>Call(c,t,"SELECT loan_id,'RETURNED',NULL::date,returned_at,late_fee FROM tool_lending.return_tool(@loan,@actor,@request)",0,0,default(DateTime),default(DateTime),default(DateTime),x.LoanId,actor,request));
-  WriteResult Execute(string op,Guid key,object payload,Guid request,Func<NpgsqlConnection,NpgsqlTransaction,WriteResult> work){var hash=Hash(JsonConvert.SerializeObject(payload));using(var c=Open())using(var t=c.BeginTransaction(IsolationLevel.Serializable)){using(var q=new NpgsqlCommand("SELECT request_hash,response_json::text FROM tool_lending.idempotency_records WHERE operation=@op AND idempotency_key=@key FOR UPDATE",c,t)){q.Parameters.AddWithValue("op",op);q.Parameters.AddWithValue("key",key);using(var d=q.ExecuteReader())if(d.Read()){if(d.GetString(0)!=hash)throw new InvalidOperationException("Idempotency key reused with a different request.");var old=JsonConvert.DeserializeObject<WriteResult>(d.GetString(1));t.Commit();return old;}}var result=work(c,t);result.RequestId=request;using(var q=new NpgsqlCommand("INSERT INTO tool_lending.idempotency_records(operation,idempotency_key,request_hash,response_json,http_status) VALUES(@op,@key,@hash,CAST(@json AS jsonb),200)",c,t)){q.Parameters.AddWithValue("op",op);q.Parameters.AddWithValue("key",key);q.Parameters.AddWithValue("hash",hash);q.Parameters.AddWithValue("json",JsonConvert.SerializeObject(result));q.ExecuteNonQuery();}t.Commit();return result;}}
-  static WriteResult Call(NpgsqlConnection c,NpgsqlTransaction t,string sql,int tool,int member,DateTime start,DateTime end,DateTime due,long loan,string actor,Guid request){using(var q=new NpgsqlCommand(sql,c,t)){if(sql.Contains("@tool"))q.Parameters.AddWithValue("tool",tool);if(sql.Contains("@member"))q.Parameters.AddWithValue("member",member);if(sql.Contains("@start"))q.Parameters.AddWithValue("start",start.Date);if(sql.Contains("@end"))q.Parameters.AddWithValue("end",end.Date);if(sql.Contains("@due"))q.Parameters.AddWithValue("due",due.Date);if(sql.Contains("@loan"))q.Parameters.AddWithValue("loan",loan);q.Parameters.AddWithValue("actor",actor);q.Parameters.AddWithValue("request",request);using(var d=q.ExecuteReader()){d.Read();return new WriteResult{Id=d.GetInt64(0),Status=d.GetString(1),DueOn=d.IsDBNull(2)?(DateTime?)null:d.GetDateTime(2),ReturnedAt=d.IsDBNull(3)?(DateTime?)null:d.GetDateTime(3),LateFee=d.IsDBNull(4)?(decimal?)null:d.GetDecimal(4)};}}}
-  static string Hash(string s){using(var h=SHA256.Create())return BitConverter.ToString(h.ComputeHash(Encoding.UTF8.GetBytes(s))).Replace("-","").ToLowerInvariant();}
- }
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace ToolLending.AppServer
+{
+    public sealed class Repository
+    {
+        private readonly string connectionString =
+            ConfigurationManager.ConnectionStrings["ToolLending"]
+                .ConnectionString;
+
+        private NpgsqlConnection Open()
+        {
+            var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
+
+        public IList<ToolDto> GetTools()
+        {
+            var tools = new List<ToolDto>();
+
+            using (var connection = Open())
+            using (var command = new NpgsqlCommand(
+                @"SELECT
+                      tool_id,
+                      asset_tag,
+                      display_name,
+                      daily_late_fee,
+                      status::text,
+                      version
+                  FROM tool_lending.tools
+                  ORDER BY tool_id",
+                connection))
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tools.Add(
+                        new ToolDto
+                        {
+                            ToolId = reader.GetInt32(0),
+                            AssetTag = reader.GetString(1),
+                            DisplayName = reader.GetString(2),
+                            DailyLateFee = reader.GetDecimal(3),
+                            Status = reader.GetString(4),
+                            Version = reader.GetInt32(5)
+                        });
+                }
+            }
+
+            return tools;
+        }
+
+        public MemberDto GetMember(int id)
+        {
+            const string sql = @"
+                SELECT
+                    m.member_id,
+                    m.display_name,
+                    m.tier::text,
+                    m.active,
+                    count(l.loan_id)::int,
+                    coalesce(bool_or(l.due_on < CURRENT_DATE), false),
+                    tool_lending.tier_checkout_limit(m.tier),
+                    tool_lending.tier_max_loan_days(m.tier)
+                FROM tool_lending.members m
+                LEFT JOIN tool_lending.loans l
+                    ON l.member_id = m.member_id
+                    AND l.status = 'OPEN'
+                WHERE m.member_id = @id
+                GROUP BY m.member_id";
+
+            using (var connection = Open())
+            using (var command = new NpgsqlCommand(sql, connection))
+            {
+                command.Parameters
+                    .Add("id", NpgsqlDbType.Integer)
+                    .Value = id;
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (!reader.Read())
+                    {
+                        return null;
+                    }
+
+                    return new MemberDto
+                    {
+                        MemberId = reader.GetInt32(0),
+                        DisplayName = reader.GetString(1),
+                        Tier = reader.GetString(2),
+                        Active = reader.GetBoolean(3),
+                        OpenLoans = reader.GetInt32(4),
+                        HasOverdueLoan = reader.GetBoolean(5),
+                        CheckoutLimit = reader.GetInt32(6),
+                        MaxLoanDays = reader.GetInt32(7)
+                    };
+                }
+            }
+        }
+
+        public IList<AuditDto> GetAudit(int take)
+        {
+            const string sql = @"
+                SELECT
+                    audit_id,
+                    occurred_at,
+                    actor,
+                    operation,
+                    entity_type,
+                    entity_id,
+                    request_id,
+                    details::text
+                FROM tool_lending.audit_log
+                ORDER BY audit_id DESC
+                LIMIT @take";
+
+            var auditEntries = new List<AuditDto>();
+
+            using (var connection = Open())
+            using (var command = new NpgsqlCommand(sql, connection))
+            {
+                command.Parameters
+                    .Add("take", NpgsqlDbType.Integer)
+                    .Value = Math.Min(Math.Max(take, 1), 500);
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        auditEntries.Add(
+                            new AuditDto
+                            {
+                                AuditId = reader.GetInt64(0),
+                                OccurredAt = reader.GetDateTime(1),
+                                Actor = reader.GetString(2),
+                                Operation = reader.GetString(3),
+                                EntityType = reader.GetString(4),
+                                EntityId = reader.GetString(5),
+                                RequestId = reader.GetGuid(6),
+                                Details = reader.GetString(7)
+                            });
+                    }
+                }
+            }
+
+            return auditEntries;
+        }
+
+        public WriteResult Reserve(
+            ReservationRequest reservation,
+            string actor,
+            Guid requestId,
+            Guid idempotencyKey)
+        {
+            const string sql = @"
+                SELECT
+                    reservation_id,
+                    status::text,
+                    NULL::date,
+                    NULL::timestamptz,
+                    NULL::numeric
+                FROM tool_lending.reserve_tool(
+                    @tool,
+                    @member,
+                    @start,
+                    @end,
+                    @actor,
+                    @request)";
+
+            return Execute(
+                "reserve",
+                idempotencyKey,
+                reservation,
+                requestId,
+                (connection, transaction) =>
+                    Call(
+                        connection,
+                        transaction,
+                        sql,
+                        reservation.ToolId,
+                        reservation.MemberId,
+                        reservation.StartsOn,
+                        reservation.EndsOn,
+                        default(DateTime),
+                        0,
+                        actor,
+                        requestId));
+        }
+
+        public WriteResult Checkout(
+            CheckoutRequest checkout,
+            string actor,
+            Guid requestId,
+            Guid idempotencyKey)
+        {
+            const string sql = @"
+                SELECT
+                    loan_id,
+                    status::text,
+                    due_on,
+                    NULL::timestamptz,
+                    NULL::numeric
+                FROM tool_lending.checkout_tool(
+                    @tool,
+                    @member,
+                    @due,
+                    @actor,
+                    @request)";
+
+            return Execute(
+                "checkout",
+                idempotencyKey,
+                checkout,
+                requestId,
+                (connection, transaction) =>
+                    Call(
+                        connection,
+                        transaction,
+                        sql,
+                        checkout.ToolId,
+                        checkout.MemberId,
+                        default(DateTime),
+                        default(DateTime),
+                        checkout.DueOn,
+                        0,
+                        actor,
+                        requestId));
+        }
+
+        public WriteResult Return(
+            ReturnRequest returnRequest,
+            string actor,
+            Guid requestId,
+            Guid idempotencyKey)
+        {
+            const string sql = @"
+                SELECT
+                    loan_id,
+                    'RETURNED',
+                    NULL::date,
+                    returned_at,
+                    late_fee
+                FROM tool_lending.return_tool(
+                    @loan,
+                    @actor,
+                    @request)";
+
+            return Execute(
+                "return",
+                idempotencyKey,
+                returnRequest,
+                requestId,
+                (connection, transaction) =>
+                    Call(
+                        connection,
+                        transaction,
+                        sql,
+                        0,
+                        0,
+                        default(DateTime),
+                        default(DateTime),
+                        default(DateTime),
+                        returnRequest.LoanId,
+                        actor,
+                        requestId));
+        }
+
+        private WriteResult Execute(
+            string operation,
+            Guid idempotencyKey,
+            object payload,
+            Guid requestId,
+            Func<NpgsqlConnection, NpgsqlTransaction, WriteResult> work)
+        {
+            var requestHash = Hash(
+                JsonConvert.SerializeObject(payload));
+
+            using (var connection = Open())
+            using (var transaction = connection.BeginTransaction(
+                IsolationLevel.Serializable))
+            {
+                const string existingSql = @"
+                    SELECT
+                        request_hash,
+                        response_json::text
+                    FROM tool_lending.idempotency_records
+                    WHERE operation = @operation
+                      AND idempotency_key = @key
+                    FOR UPDATE";
+
+                using (var command = new NpgsqlCommand(
+                    existingSql,
+                    connection,
+                    transaction))
+                {
+                    command.Parameters
+                        .Add("operation", NpgsqlDbType.Varchar)
+                        .Value = operation;
+
+                    command.Parameters
+                        .Add("key", NpgsqlDbType.Uuid)
+                        .Value = idempotencyKey;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (reader.GetString(0) != requestHash)
+                            {
+                                throw new InvalidOperationException(
+                                    "Idempotency key reused with a different request.");
+                            }
+
+                            var previousResult =
+                                JsonConvert.DeserializeObject<WriteResult>(
+                                    reader.GetString(1));
+
+                            transaction.Commit();
+                            return previousResult;
+                        }
+                    }
+                }
+
+                var result = work(connection, transaction);
+                result.RequestId = requestId;
+
+                const string insertSql = @"
+                    INSERT INTO tool_lending.idempotency_records
+                    (
+                        operation,
+                        idempotency_key,
+                        request_hash,
+                        response_json,
+                        http_status
+                    )
+                    VALUES
+                    (
+                        @operation,
+                        @key,
+                        @hash,
+                        CAST(@json AS jsonb),
+                        200
+                    )";
+
+                using (var command = new NpgsqlCommand(
+                    insertSql,
+                    connection,
+                    transaction))
+                {
+                    command.Parameters
+                        .Add("operation", NpgsqlDbType.Varchar)
+                        .Value = operation;
+
+                    command.Parameters
+                        .Add("key", NpgsqlDbType.Uuid)
+                        .Value = idempotencyKey;
+
+                    command.Parameters
+                        .Add("hash", NpgsqlDbType.Char)
+                        .Value = requestHash;
+
+                    command.Parameters
+                        .Add("json", NpgsqlDbType.Text)
+                        .Value = JsonConvert.SerializeObject(result);
+
+                    command.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+                return result;
+            }
+        }
+
+        private static WriteResult Call(
+            NpgsqlConnection connection,
+            NpgsqlTransaction transaction,
+            string sql,
+            int tool,
+            int member,
+            DateTime start,
+            DateTime end,
+            DateTime due,
+            long loan,
+            string actor,
+            Guid requestId)
+        {
+            using (var command = new NpgsqlCommand(
+                sql,
+                connection,
+                transaction))
+            {
+                if (sql.Contains("@tool"))
+                {
+                    command.Parameters
+                        .Add("tool", NpgsqlDbType.Integer)
+                        .Value = tool;
+                }
+
+                if (sql.Contains("@member"))
+                {
+                    command.Parameters
+                        .Add("member", NpgsqlDbType.Integer)
+                        .Value = member;
+                }
+
+                if (sql.Contains("@start"))
+                {
+                    command.Parameters
+                        .Add("start", NpgsqlDbType.Date)
+                        .Value = start.Date;
+                }
+
+                if (sql.Contains("@end"))
+                {
+                    command.Parameters
+                        .Add("end", NpgsqlDbType.Date)
+                        .Value = end.Date;
+                }
+
+                if (sql.Contains("@due"))
+                {
+                    command.Parameters
+                        .Add("due", NpgsqlDbType.Date)
+                        .Value = due.Date;
+                }
+
+                if (sql.Contains("@loan"))
+                {
+                    command.Parameters
+                        .Add("loan", NpgsqlDbType.Bigint)
+                        .Value = loan;
+                }
+
+                command.Parameters
+                    .Add("actor", NpgsqlDbType.Varchar)
+                    .Value = actor;
+
+                command.Parameters
+                    .Add("request", NpgsqlDbType.Uuid)
+                    .Value = requestId;
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (!reader.Read())
+                    {
+                        throw new InvalidOperationException(
+                            "The database operation returned no result.");
+                    }
+
+                    return new WriteResult
+                    {
+                        Id = reader.GetInt64(0),
+                        Status = reader.GetString(1),
+                        DueOn = reader.IsDBNull(2)
+                            ? (DateTime?)null
+                            : reader.GetDateTime(2),
+                        ReturnedAt = reader.IsDBNull(3)
+                            ? (DateTime?)null
+                            : reader.GetDateTime(3),
+                        LateFee = reader.IsDBNull(4)
+                            ? (decimal?)null
+                            : reader.GetDecimal(4)
+                    };
+                }
+            }
+        }
+
+        private static string Hash(string value)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(value);
+                var hash = sha256.ComputeHash(bytes);
+
+                return BitConverter
+                    .ToString(hash)
+                    .Replace("-", string.Empty)
+                    .ToLowerInvariant();
+            }
+        }
+    }
 }
