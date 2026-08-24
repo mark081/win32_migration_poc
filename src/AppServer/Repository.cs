@@ -30,14 +30,22 @@ namespace ToolLending.AppServer
             using (var connection = Open())
             using (var command = new NpgsqlCommand(
                 @"SELECT
-                      tool_id,
-                      asset_tag,
-                      display_name,
-                      daily_late_fee,
-                      status::text,
-                      version
-                  FROM tool_lending.tools
-                  ORDER BY tool_id",
+                      t.tool_id,
+                      t.asset_tag,
+                      t.display_name,
+                      t.daily_late_fee,
+                      t.status::text,
+                      t.version,
+                      l.loan_id,
+                      m.member_id,
+                      m.display_name
+                  FROM tool_lending.tools t
+                  LEFT JOIN tool_lending.loans l
+                    ON l.tool_id = t.tool_id
+                   AND l.status = 'OPEN'
+                  LEFT JOIN tool_lending.members m
+                    ON m.member_id = l.member_id
+                  ORDER BY t.tool_id",
                 connection))
             using (var reader = command.ExecuteReader())
             {
@@ -51,7 +59,10 @@ namespace ToolLending.AppServer
                             DisplayName = reader.GetString(2),
                             DailyLateFee = reader.GetDecimal(3),
                             Status = reader.GetString(4),
-                            Version = reader.GetInt32(5)
+                            Version = reader.GetInt32(5),
+                            LoanId = reader.IsDBNull(6) ? (long?)null : reader.GetInt64(6),
+                            BorrowedByMemberId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
+                            BorrowedBy = reader.IsDBNull(8) ? null : reader.GetString(8)
                         });
                 }
             }
@@ -85,6 +96,7 @@ namespace ToolLending.AppServer
                     .Add("id", NpgsqlDbType.Integer)
                     .Value = id;
 
+                MemberDto member;
                 using (var reader = command.ExecuteReader())
                 {
                     if (!reader.Read())
@@ -92,7 +104,7 @@ namespace ToolLending.AppServer
                         return null;
                     }
 
-                    return new MemberDto
+                    member = new MemberDto
                     {
                         MemberId = reader.GetInt32(0),
                         DisplayName = reader.GetString(1),
@@ -104,6 +116,34 @@ namespace ToolLending.AppServer
                         MaxLoanDays = reader.GetInt32(7)
                     };
                 }
+
+                const string loansSql = @"
+                    SELECT l.loan_id, t.tool_id, t.asset_tag, t.display_name, l.due_on
+                    FROM tool_lending.loans l
+                    JOIN tool_lending.tools t ON t.tool_id = l.tool_id
+                    WHERE l.member_id = @id AND l.status = 'OPEN'
+                    ORDER BY l.due_on, l.loan_id";
+
+                using (var loansCommand = new NpgsqlCommand(loansSql, connection))
+                {
+                    loansCommand.Parameters.Add("id", NpgsqlDbType.Integer).Value = id;
+                    using (var reader = loansCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            member.OutstandingLoans.Add(new OutstandingLoanDto
+                            {
+                                LoanId = reader.GetInt64(0),
+                                ToolId = reader.GetInt32(1),
+                                AssetTag = reader.GetString(2),
+                                Tool = reader.GetString(3),
+                                DueOn = reader.GetDateTime(4)
+                            });
+                        }
+                    }
+                }
+
+                return member;
             }
         }
 
