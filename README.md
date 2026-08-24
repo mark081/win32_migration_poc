@@ -319,7 +319,7 @@ flowchart LR
     Reset --> APITests
 ```
 
-The test suite covers native rule calculations, database routines, API health and authentication, idempotent checkout replay, business conflicts, late fees, audit creation, and competing concurrent checkouts.
+The test suite covers native rule calculations, database routines, API health and authentication, invalid request bodies and idempotency keys, reservation success and failure paths, idempotent checkout replay, inactive and overdue members, checkout limits, invalid due dates, reservation ownership, missing records, duplicate returns, late fees, audit creation, and competing concurrent checkouts.
 
 ## Code formatting
 
@@ -386,6 +386,9 @@ Additional documentation:
 - [Demonstration script](docs/demo.md)
 
 ## Documentation expectations for modernization stages
+
+The test baseline and promotion gates for the Legacy, Connected, Hybrid, and SaaS stages are
+documented in [`docs/testing-evolution.md`](docs/testing-evolution.md).
 
 Each future stage should update this README or link to a versioned architecture decision record that identifies:
 

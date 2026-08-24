@@ -10,15 +10,25 @@
 
 enum
 {
+    // Win32 exposes these control IDs to Microsoft UI Automation as AutomationId values.
+    // Keep every value explicit and stable so FlaUI tests do not break when controls are added.
     ID_REFRESH = 101,
-    ID_LOAD_MEMBER,
-    ID_CHECKOUT,
-    ID_RETURN,
-    ID_TOOL,
-    ID_MEMBER,
-    ID_DUE,
-    ID_LOAN,
-    ID_OUTPUT
+    ID_LOAD_MEMBER = 102,
+    ID_CHECKOUT = 103,
+    ID_RETURN = 104,
+    ID_TOOL = 105,
+    ID_MEMBER = 106,
+    ID_DUE = 107,
+    ID_LOAN = 108,
+    ID_OUTPUT = 109,
+
+    // Give visible labels their own stable IDs so accessibility tools and UI tests can identify
+    // them independently of display position. Keeping each label immediately before its input
+    // also gives Win32 accessibility clients the context needed to associate the two controls.
+    ID_MEMBER_LABEL = 201,
+    ID_TOOL_LABEL = 202,
+    ID_DUE_LABEL = 203,
+    ID_LOAN_LABEL = 204
 };
 static HWND outputBox, toolBox, memberBox, dueBox, loanBox;
 static const wchar_t *API_KEY = L"demo-local-key";
@@ -230,23 +240,29 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
 {
     if (msg == WM_CREATE)
     {
-        CreateWindow(L"STATIC", L"Member ID", WS_CHILD | WS_VISIBLE, 15, 15, 80, 20, h, 0, 0, 0);
+        // These visible labels are intentional accessibility metadata as well as UI text. FlaUI
+        // and screen readers use them to describe the adjacent edit controls without relying on
+        // screen coordinates, which makes validation stable across DPI and layout changes.
+        CreateWindow(L"STATIC", L"Member ID", WS_CHILD | WS_VISIBLE, 15, 15, 80, 20, h,
+                     (HMENU)ID_MEMBER_LABEL, 0, 0);
         memberBox = CreateWindow(L"EDIT", L"1", WS_CHILD | WS_VISIBLE | WS_BORDER, 100, 12, 70, 24,
                                  h, (HMENU)ID_MEMBER, 0, 0);
         CreateWindow(L"BUTTON", L"Load Member", WS_CHILD | WS_VISIBLE, 180, 11, 100, 26, h,
                      (HMENU)ID_LOAD_MEMBER, 0, 0);
-        CreateWindow(L"STATIC", L"Tool ID", WS_CHILD | WS_VISIBLE, 15, 52, 80, 20, h, 0, 0, 0);
+        CreateWindow(L"STATIC", L"Tool ID", WS_CHILD | WS_VISIBLE, 15, 52, 80, 20, h,
+                     (HMENU)ID_TOOL_LABEL, 0, 0);
         toolBox = CreateWindow(L"EDIT", L"1", WS_CHILD | WS_VISIBLE | WS_BORDER, 100, 49, 70, 24, h,
                                (HMENU)ID_TOOL, 0, 0);
-        CreateWindow(L"STATIC", L"Due (YYYY-MM-DD)", WS_CHILD | WS_VISIBLE, 300, 15, 130, 20, h, 0,
-                     0, 0);
+        CreateWindow(L"STATIC", L"Due (YYYY-MM-DD)", WS_CHILD | WS_VISIBLE, 300, 15, 130, 20, h,
+                     (HMENU)ID_DUE_LABEL, 0, 0);
         dueBox = CreateWindow(L"EDIT", L"2026-08-29", WS_CHILD | WS_VISIBLE | WS_BORDER, 435, 12,
                               110, 24, h, (HMENU)ID_DUE, 0, 0);
         CreateWindow(L"BUTTON", L"Check Out", WS_CHILD | WS_VISIBLE, 300, 48, 110, 28, h,
                      (HMENU)ID_CHECKOUT, 0, 0);
         CreateWindow(L"BUTTON", L"Refresh Tools", WS_CHILD | WS_VISIBLE, 425, 48, 120, 28, h,
                      (HMENU)ID_REFRESH, 0, 0);
-        CreateWindow(L"STATIC", L"Loan ID", WS_CHILD | WS_VISIBLE, 570, 15, 65, 20, h, 0, 0, 0);
+        CreateWindow(L"STATIC", L"Loan ID", WS_CHILD | WS_VISIBLE, 570, 15, 65, 20, h,
+                     (HMENU)ID_LOAN_LABEL, 0, 0);
         loanBox = CreateWindow(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER, 635, 12, 70, 24, h,
                                (HMENU)ID_LOAN, 0, 0);
         CreateWindow(L"BUTTON", L"Return Tool", WS_CHILD | WS_VISIBLE, 570, 48, 135, 28, h,

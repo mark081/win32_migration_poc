@@ -47,9 +47,11 @@ namespace ToolLending.AppServer
         {
             var request = Guid.NewGuid();
 
+            var idempotencyKey = Key();
+
             try
             {
-                return Ok(f(request, Key()));
+                return Ok(f(request, idempotencyKey));
             }
             catch (PostgresException e) when (e.SqlState.StartsWith("TL"))
             {
