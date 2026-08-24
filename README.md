@@ -387,6 +387,9 @@ Additional documentation:
 
 ## Documentation expectations for modernization stages
 
+The test baseline and promotion gates for the Legacy, Connected, Hybrid, and SaaS stages are
+documented in [`docs/testing-evolution.md`](docs/testing-evolution.md).
+
 Each future stage should update this README or link to a versioned architecture decision record that identifies:
 
 - the stage objective and explicit non-goals;
