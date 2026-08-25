@@ -2,6 +2,7 @@
 #define _UNICODE
 #include <windows.h>
 #include <winhttp.h>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -21,6 +22,7 @@ enum
     ID_DUE = 107,
     ID_LOAN = 108,
     ID_OUTPUT = 109,
+    ID_CREDENTIAL_MODE = 110,
 
     // Give visible labels their own stable IDs so accessibility tools and UI tests can identify
     // them independently of display position. Keeping each label immediately before its input
@@ -31,7 +33,8 @@ enum
     ID_LOAN_LABEL = 204
 };
 static HWND outputBox, toolBox, memberBox, dueBox, loanBox;
-static const wchar_t *API_KEY = L"demo-local-key";
+static std::wstring apiKey = L"demo-local-key";
+static std::wstring credentialMode = L"Legacy shared credential: built-in demo fallback";
 static std::string Utf8(const std::wstring &s)
 {
     if (s.empty())
@@ -51,6 +54,47 @@ static std::wstring Wide(const std::string &s)
     MultiByteToWideChar(CP_UTF8, 0, s.c_str(), (int)s.size(), &x[0], n);
     return x;
 }
+static std::wstring EnvironmentValue(const wchar_t *name)
+{
+    DWORD size = GetEnvironmentVariable(name, nullptr, 0);
+    if (!size)
+        return L"";
+    std::wstring value(size, L'\0');
+    GetEnvironmentVariable(name, &value[0], size);
+    value.resize(size - 1);
+    return value;
+}
+static bool LoadLegacyCredential(std::wstring &error)
+{
+    const auto path = EnvironmentValue(L"TOOL_LENDING_LEGACY_CREDENTIAL_FILE");
+    if (path.empty())
+        return true;
+
+    // A UNC path models the current practice-wide SMB share. A local path is deliberately also
+    // supported so development and automated tests can characterize the behavior without creating
+    // or exposing a real network share.
+    std::ifstream file(Utf8(path), std::ios::binary);
+    if (!file)
+    {
+        error = L"The configured Legacy shared credential file could not be opened:\r\n" + path;
+        return false;
+    }
+
+    std::string value((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    if (value.compare(0, 3, "\xEF\xBB\xBF") == 0)
+        value.erase(0, 3);
+    auto first = value.find_first_not_of(" \t\r\n");
+    auto last = value.find_last_not_of(" \t\r\n");
+    if (first == std::string::npos)
+    {
+        error = L"The configured Legacy shared credential file is empty:\r\n" + path;
+        return false;
+    }
+
+    apiKey = Wide(value.substr(first, last - first + 1));
+    credentialMode = L"Legacy shared credential file: " + path;
+    return true;
+}
 static std::wstring Http(const wchar_t *verb, const std::wstring &path,
                          const std::string &body = "", const std::wstring &key = L"")
 {
@@ -62,7 +106,7 @@ static std::wstring Http(const wchar_t *verb, const std::wstring &path,
     HINTERNET request = WinHttpOpenRequest(connect, verb, path.c_str(), nullptr, WINHTTP_NO_REFERER,
                                            WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
     std::wstring headers =
-        L"X-Api-Key: " + std::wstring(API_KEY) + L"\r\nX-Actor: legacy.desktop\r\n";
+        L"X-Api-Key: " + apiKey + L"\r\nX-Actor: legacy.desktop\r\n";
     if (!key.empty())
         headers += L"Idempotency-Key: " + key + L"\r\n";
     if (!body.empty())
@@ -270,8 +314,12 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         outputBox = CreateWindow(L"EDIT", L"Click Refresh Tools to begin.",
                                  WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL |
                                      WS_VSCROLL | WS_HSCROLL | ES_AUTOHSCROLL | ES_READONLY,
-                                 15, 90, 750, 400, h, (HMENU)ID_OUTPUT, 0, 0);
+                                 15, 90, 750, 380, h, (HMENU)ID_OUTPUT, 0, 0);
         SendMessage(outputBox, WM_SETFONT, (WPARAM)GetStockObject(ANSI_FIXED_FONT), TRUE);
+        // This label makes the deliberately weak Legacy trust model visible and testable. It shows
+        // where the practice-shared credential came from, but never renders the credential value.
+        CreateWindow(L"STATIC", credentialMode.c_str(), WS_CHILD | WS_VISIBLE, 15, 478, 750, 20,
+                     h, (HMENU)ID_CREDENTIAL_MODE, 0, 0);
         return 0;
     }
     if (msg == WM_COMMAND)
@@ -302,6 +350,13 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
 }
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int show)
 {
+    std::wstring credentialError;
+    if (!LoadLegacyCredential(credentialError))
+    {
+        MessageBox(nullptr, credentialError.c_str(), L"Legacy credential error", MB_ICONERROR);
+        return 2;
+    }
+
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;

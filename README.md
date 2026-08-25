@@ -356,6 +356,7 @@ These constraints form the baseline against which Connected, Hybrid, and SaaS ch
 - Windows-only build, deployment, and operations.
 - Business behavior distributed across UI, DLL, service, and stored procedures.
 - Static application-level API key rather than user/device identity.
+- Optional SMB-hosted credential file shared by every Legacy desktop client in a practice.
 - Configuration and database credentials stored beside the service executable.
 - No central tenant, fleet, release, telemetry, or policy management.
 - No WAN resilience, cloud control plane, multi-tenancy, automated elasticity, or managed high availability.
@@ -381,6 +382,7 @@ These constraints form the baseline against which Connected, Hybrid, and SaaS ch
 Additional documentation:
 
 - [Architecture and rule ownership](docs/architecture.md)
+- [Legacy shared credential model](docs/legacy-shared-credential.md)
 - [Windows 11 Pro development with VS Code](docs/windows-11-pro-setup.md)
 - [Windows Server 2019 setup and operations](docs/windows-server-2019-setup.md)
 - [Demonstration script](docs/demo.md)
