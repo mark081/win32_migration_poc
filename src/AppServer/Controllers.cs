@@ -46,7 +46,6 @@ namespace ToolLending.AppServer
         protected IHttpActionResult Write(Func<Guid, Guid, WriteResult> f)
         {
             var request = Guid.NewGuid();
-
             var idempotencyKey = Key();
 
             try
@@ -61,6 +60,18 @@ namespace ToolLending.AppServer
                     {
                         code = e.SqlState,
                         message = e.MessageText,
+                        requestId = request,
+                    }
+                );
+            }
+            catch (PostgresException e) when (e.SqlState == "23505")
+            {
+                return Content(
+                    HttpStatusCode.Conflict,
+                    new
+                    {
+                        code = "DUPLICATE",
+                        message = "A record with that unique value already exists.",
                         requestId = request,
                     }
                 );
@@ -112,6 +123,22 @@ namespace ToolLending.AppServer
     {
         [HttpGet, Route("")]
         public IHttpActionResult Get() => Ok(Repo.GetTools());
+
+        [HttpPost, Route("")]
+        public IHttpActionResult Post(CreateToolRequest x)
+        {
+            if (x == null)
+            {
+                return BadRequest("A request body is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Write((r, k) => Repo.CreateTool(x, Actor, r, k));
+        }
     }
 
     [RoutePrefix("api/v1/members")]
@@ -122,6 +149,22 @@ namespace ToolLending.AppServer
         {
             var x = Repo.GetMember(id);
             return x == null ? (IHttpActionResult)NotFound() : Ok(x);
+        }
+
+        [HttpPost, Route("")]
+        public IHttpActionResult Post(CreateMemberRequest x)
+        {
+            if (x == null)
+            {
+                return BadRequest("A request body is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Write((r, k) => Repo.CreateMember(x, Actor, r, k));
         }
     }
 
