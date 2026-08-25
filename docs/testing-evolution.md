@@ -98,6 +98,12 @@ The FlaUI/NUnit suite currently verifies:
 
 - Member, tool, due-date, loan, checkout, refresh, and return controls expose stable Automation IDs.
 - Attempting checkout without a member displays the expected `Validation` message.
+- A configured shared credential file is identified in the UI without exposing its secret value.
+
+The UI runner creates a temporary local credential file to model the SMB-backed Legacy behavior
+without creating a network share or using a real secret. The client must fail closed when an
+explicitly configured credential file cannot be read or is empty. The built-in demo fallback is
+retained only for the unconfigured local proof-of-concept path.
 
 This is the beginning of the UI characterization suite. Add tests for positive IDs, due-date shape,
 confirmation and cancellation, API errors, successful checkout, tool refresh, returns, keyboard
@@ -177,6 +183,7 @@ Retain all Legacy suites and add:
 - Network timeout, retry, unavailable-service, and interrupted-request scenarios.
 - Idempotent retry tests across real network failures.
 - Configuration tests proving secrets and endpoint addresses are externalized.
+- Tests proving the practice-shared Legacy credential can be retired without silently falling back.
 - UI tests proving connected failures are understandable and do not corrupt local state.
 - Performance baselines for representative read and write operations over the network.
 
@@ -242,6 +249,7 @@ components.
 | `RET-001` | Return calculates late fee | API | Connected contract | Both paths | Tenant and currency policy contract |
 | `RET-002` | Duplicate return rejected | API | Retry across network loss | Both paths | Distributed idempotency contract |
 | `SEC-001` | Unauthenticated request rejected | API | TLS + credential contract | Both paths | Identity/RBAC contract |
+| `SEC-002` | Shared credential source visible without exposing its value | FlaUI + configuration | Externalized secret; no fallback | Legacy and new identities coexist explicitly | Practice-shared credential removed |
 | `UI-001` | Required checkout fields validated | FlaUI | Connected Win32 client | Legacy and new UI paths | Web UI equivalent |
 
 Expand this matrix whenever a rule, workflow, or failure mode is discovered. A modernization pull

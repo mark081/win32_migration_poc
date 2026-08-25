@@ -20,6 +20,7 @@ public sealed class DesktopClientTests
     private const string CheckOut = "103";
     private const string RefreshTools = "101";
     private const string ReturnTool = "104";
+    private const string CredentialMode = "110";
 
     private Application? application;
     private UIA3Automation? automation;
@@ -60,6 +61,23 @@ public sealed class DesktopClientTests
         AssertControl(CheckOut, "Check Out");
         AssertControl(RefreshTools, "Refresh Tools");
         AssertControl(ReturnTool, "Return Tool");
+        AssertControl(CredentialMode, "Legacy credential mode");
+    }
+
+    [Test]
+    public void DisplaysSharedCredentialSourceWithoutExposingCredential()
+    {
+        var configuredPath = Environment.GetEnvironmentVariable(
+            "TOOL_LENDING_LEGACY_CREDENTIAL_FILE");
+        var secret = Environment.GetEnvironmentVariable("TOOL_LENDING_UI_TEST_SHARED_KEY");
+        var label = Find(CredentialMode).Name;
+
+        Assert.That(configuredPath, Is.Not.Null.And.Not.Empty);
+        Assert.That(secret, Is.Not.Null.And.Not.Empty);
+        Assert.That(label, Does.StartWith("Legacy shared credential file:"));
+        Assert.That(label, Does.Contain(configuredPath));
+        Assert.That(label, Does.Not.Contain(secret),
+            "The UI may display the credential source, but must never display its value.");
     }
 
     [Test]
@@ -125,5 +143,65 @@ public sealed class DesktopClientTests
         }
 
         throw new AssertionException("Desktop client window did not appear.");
+    }
+}
+
+[TestFixture]
+[Apartment(System.Threading.ApartmentState.STA)]
+public sealed class LegacyCredentialStartupTests
+{
+    [Test]
+    public void MissingConfiguredCredentialFileFailsClosed()
+    {
+        var executable = Environment.GetEnvironmentVariable("TOOL_LENDING_UI_EXE");
+        var originalPath = Environment.GetEnvironmentVariable(
+            "TOOL_LENDING_LEGACY_CREDENTIAL_FILE");
+        var missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".credential");
+
+        Assert.That(executable, Is.Not.Null.And.Not.Empty);
+        Assert.That(File.Exists(missingPath), Is.False);
+
+        Application? application = null;
+        using var automation = new UIA3Automation();
+        try
+        {
+            Environment.SetEnvironmentVariable(
+                "TOOL_LENDING_LEGACY_CREDENTIAL_FILE", missingPath);
+            application = Application.Launch(executable!);
+
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            Window? dialog = null;
+            while (DateTime.UtcNow < deadline && dialog is null)
+            {
+                dialog = automation.GetDesktop()
+                    .FindFirstChild(cf => cf.ByName("Legacy credential error"))
+                    ?.AsWindow();
+                Thread.Sleep(100);
+            }
+
+            Assert.That(dialog, Is.Not.Null, "The credential startup error did not appear.");
+            Assert.That(
+                dialog!.FindFirstDescendant(cf =>
+                    cf.ByName($"The configured Legacy shared credential file could not be opened:\r\n{missingPath}")),
+                Is.Not.Null);
+            dialog.FindFirstDescendant(cf => cf.ByName("OK"))?.AsButton().Invoke();
+
+            var exitDeadline = DateTime.UtcNow.AddSeconds(2);
+            while (DateTime.UtcNow < exitDeadline && !application.HasExited)
+            {
+                Thread.Sleep(50);
+            }
+            Assert.That(application.HasExited, Is.True);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(
+                "TOOL_LENDING_LEGACY_CREDENTIAL_FILE", originalPath);
+            if (application is { HasExited: false })
+            {
+                application.Kill();
+            }
+            application?.Dispose();
+        }
     }
 }
