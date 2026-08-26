@@ -1,1 +1,1 @@
-$ErrorActionPreference='Stop';if(Get-Service ToolLendingAppServer -ErrorAction SilentlyContinue){Stop-Service ToolLendingAppServer -ErrorAction SilentlyContinue;sc.exe delete ToolLendingAppServer|Out-Null;Write-Host 'Service removed.'}
+$ErrorActionPreference = 'Stop'; if (Get-Service ToolLendingAppServer -ErrorAction SilentlyContinue) { Stop-Service ToolLendingAppServer -ErrorAction SilentlyContinue; sc.exe delete ToolLendingAppServer | Out-Null; Write-Host 'Service removed.' }

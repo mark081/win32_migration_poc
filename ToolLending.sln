@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppServer", "src\AppServer\
 EndProject
 Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "NativeRulesTests", "tests\NativeRulesTests\NativeRulesTests.vcxproj", "{253B4C9D-D410-4C2A-B7AD-5F30C933B904}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopClient.UiTests", "tests\DesktopClient.UiTests\DesktopClient.UiTests.csproj", "{BBC2DD21-93F3-4CC5-AB18-918E47A9CB17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -32,5 +34,7 @@ Global
 		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Debug|x86.Build.0 = Debug|Win32
 		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Release|x86.ActiveCfg = Release|Win32
 		{253B4C9D-D410-4C2A-B7AD-5F30C933B904}.Release|x86.Build.0 = Release|Win32
+		{BBC2DD21-93F3-4CC5-AB18-918E47A9CB17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BBC2DD21-93F3-4CC5-AB18-918E47A9CB17}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -2,12 +2,12 @@
 
 This repository is a deliberately legacy-shaped, single-site client/server application used to demonstrate a staged modernization journey:
 
-1. **Current** — the on-premises legacy baseline documented here.
+1. **Legacy** — the on-premises legacy baseline documented here.
 2. **Connected** — the existing product connected to centralized services without replacing the core application.
 3. **Hybrid** — selected capabilities moved to cloud services while local operation remains supported.
 4. **SaaS** — a centrally operated, multi-tenant cloud product.
 
-The application manages community-library tools, members, reservations, checkouts, returns, and late fees. It mirrors the architectural constraints described in the West Monroe Eaglesoft assessment without copying the dental domain or imaging features. It is an architecture demonstration, not a recommended greenfield design.
+The application manages community-library tools, members, reservations, checkouts, returns, and late fees. It mirrors the architectural constraints described in the assessment without copying the domain or imaging features. It is an architecture demonstration, not a recommended greenfield design.
 
 > **Current repository state:** this README describes the legacy baseline. The `main` branch preserves that baseline; modernization work begins on the `connected` branch.
 
@@ -319,7 +319,24 @@ flowchart LR
     Reset --> APITests
 ```
 
-The test suite covers native rule calculations, database routines, API health and authentication, idempotent checkout replay, business conflicts, late fees, audit creation, and competing concurrent checkouts.
+The test suite covers native rule calculations, database routines, API health and authentication, invalid request bodies and idempotency keys, reservation success and failure paths, idempotent checkout replay, inactive and overdue members, checkout limits, invalid due dates, reservation ownership, missing records, duplicate returns, late fees, audit creation, and competing concurrent checkouts.
+
+## Code formatting
+
+Repository formatting is controlled by `.editorconfig`, `.clang-format`, `.csharpierrc.json`, and
+`PSScriptAnalyzerSettings.psd1`. Restore the repository-local .NET tools and format the supported
+source and project files with:
+
+```powershell
+dotnet tool restore
+.\scripts\Format-Code.ps1
+```
+
+Use `.\scripts\Format-Code.ps1 -Check` in CI or before committing. The script requires
+`clang-format` 17 or newer, NuGet, and PowerShell 5.1; it restores CSharpier and
+PSScriptAnalyzer automatically when necessary. SQL is kept in the same four-space,
+statement-per-block style manually because the PostgreSQL routines contain PL/pgSQL and `psql`
+metacommands that generic SQL formatters can alter incorrectly.
 
 ## Failure and recovery behavior
 
@@ -339,6 +356,7 @@ These constraints form the baseline against which Connected, Hybrid, and SaaS ch
 - Windows-only build, deployment, and operations.
 - Business behavior distributed across UI, DLL, service, and stored procedures.
 - Static application-level API key rather than user/device identity.
+- Optional SMB-hosted credential file shared by every Legacy desktop client in a practice.
 - Configuration and database credentials stored beside the service executable.
 - No central tenant, fleet, release, telemetry, or policy management.
 - No WAN resilience, cloud control plane, multi-tenancy, automated elasticity, or managed high availability.
@@ -364,11 +382,15 @@ These constraints form the baseline against which Connected, Hybrid, and SaaS ch
 Additional documentation:
 
 - [Architecture and rule ownership](docs/architecture.md)
+- [Legacy shared credential model](docs/legacy-shared-credential.md)
 - [Windows 11 Pro development with VS Code](docs/windows-11-pro-setup.md)
 - [Windows Server 2019 setup and operations](docs/windows-server-2019-setup.md)
 - [Demonstration script](docs/demo.md)
 
 ## Documentation expectations for modernization stages
+
+The test baseline and promotion gates for the Legacy, Connected, Hybrid, and SaaS stages are
+documented in [`docs/testing-evolution.md`](docs/testing-evolution.md).
 
 Each future stage should update this README or link to a versioned architecture decision record that identifies:
 

@@ -1,11 +1,215 @@
-using System; using System.Linq; using System.Net; using System.Net.Http; using System.Web.Http; using Npgsql;
-namespace ToolLending.AppServer {
- public abstract class ApiControllerBase:ApiController { protected readonly Repository Repo=new Repository(); protected string Actor{get{if(!Request.Headers.TryGetValues("X-Actor",out var v))return "anonymous";var s=v.First();return s.Substring(0,Math.Min(s.Length,100));}} protected Guid Key(){if(!Request.Headers.TryGetValues("Idempotency-Key",out var v)||!Guid.TryParse(v.First(),out var g))throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,"Idempotency-Key must be a UUID."));return g;} protected IHttpActionResult Write(Func<Guid,Guid,WriteResult> f){var request=Guid.NewGuid();try{return Ok(f(request,Key()));}catch(PostgresException e)when(e.SqlState.StartsWith("TL")){return Content(e.SqlState=="TL404"?HttpStatusCode.NotFound:HttpStatusCode.Conflict,new{code=e.SqlState,message=e.MessageText,requestId=request});}catch(InvalidOperationException e){return Content(HttpStatusCode.Conflict,new{code="IDEMPOTENCY_CONFLICT",message=e.Message,requestId=request});}catch(Exception){return Content(HttpStatusCode.InternalServerError,new{code="UNEXPECTED",message="The operation failed.",requestId=request});}} }
- [RoutePrefix("api/v1/tools")]public sealed class ToolsController:ApiControllerBase{[HttpGet,Route("")]public IHttpActionResult Get()=>Ok(Repo.GetTools());}
- [RoutePrefix("api/v1/members")]public sealed class MembersController:ApiControllerBase{[HttpGet,Route("{id:int}")]public IHttpActionResult Get(int id){var x=Repo.GetMember(id);return x==null?(IHttpActionResult)NotFound():Ok(x);}}
- [RoutePrefix("api/v1/reservations")]public sealed class ReservationsController:ApiControllerBase{[HttpPost,Route("")]public IHttpActionResult Post(ReservationRequest x){if(x==null)return BadRequest("A request body is required.");if(!ModelState.IsValid)return BadRequest(ModelState);return Write((r,k)=>Repo.Reserve(x,Actor,r,k));}}
- [RoutePrefix("api/v1/checkouts")]public sealed class CheckoutsController:ApiControllerBase{[HttpPost,Route("")]public IHttpActionResult Post(CheckoutRequest x){if(x==null)return BadRequest("A request body is required.");if(!ModelState.IsValid)return BadRequest(ModelState);return Write((r,k)=>Repo.Checkout(x,Actor,r,k));}}
- [RoutePrefix("api/v1/returns")]public sealed class ReturnsController:ApiControllerBase{[HttpPost,Route("")]public IHttpActionResult Post(ReturnRequest x){if(x==null)return BadRequest("A request body is required.");if(!ModelState.IsValid)return BadRequest(ModelState);return Write((r,k)=>Repo.Return(x,Actor,r,k));}}
- [RoutePrefix("api/v1/audit")]public sealed class AuditController:ApiControllerBase{[HttpGet,Route("")]public IHttpActionResult Get(int take=100)=>Ok(Repo.GetAudit(take));}
- [RoutePrefix("api/v1/health")]public sealed class HealthController:ApiControllerBase{[HttpGet,Route("")]public IHttpActionResult Get(){try{Repo.GetTools();return Ok(new{status="ok"});}catch{return Content(HttpStatusCode.ServiceUnavailable,new{status="database-unavailable"});}}}
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using Npgsql;
+
+namespace ToolLending.AppServer
+{
+    public abstract class ApiControllerBase : ApiController
+    {
+        protected readonly Repository Repo = new Repository();
+
+        protected string Actor
+        {
+            get
+            {
+                if (!Request.Headers.TryGetValues("X-Actor", out var v))
+                {
+                    return "anonymous";
+                }
+
+                var s = v.First();
+                return s.Substring(0, Math.Min(s.Length, 100));
+            }
+        }
+
+        protected Guid Key()
+        {
+            if (
+                !Request.Headers.TryGetValues("Idempotency-Key", out var v)
+                || !Guid.TryParse(v.First(), out var g)
+            )
+            {
+                throw new HttpResponseException(
+                    Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        "Idempotency-Key must be a UUID."
+                    )
+                );
+            }
+
+            return g;
+        }
+
+        protected IHttpActionResult Write(Func<Guid, Guid, WriteResult> f)
+        {
+            var request = Guid.NewGuid();
+
+            var idempotencyKey = Key();
+
+            try
+            {
+                return Ok(f(request, idempotencyKey));
+            }
+            catch (PostgresException e) when (e.SqlState.StartsWith("TL"))
+            {
+                return Content(
+                    e.SqlState == "TL404" ? HttpStatusCode.NotFound : HttpStatusCode.Conflict,
+                    new
+                    {
+                        code = e.SqlState,
+                        message = e.MessageText,
+                        requestId = request,
+                    }
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                return Content(
+                    HttpStatusCode.Conflict,
+                    new
+                    {
+                        code = "IDEMPOTENCY_CONFLICT",
+                        message = e.Message,
+                        requestId = request,
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(
+                    "Request {0} failed:{1}{2}",
+                    request,
+                    Environment.NewLine,
+                    e
+                );
+
+                return Content(
+                    HttpStatusCode.InternalServerError,
+                    new
+                    {
+                        code = "UNEXPECTED",
+                        message = "The operation failed.",
+                        requestId = request,
+                    }
+                );
+                // return Content(
+                //     HttpStatusCode.InternalServerError,
+                //     new
+                //     {
+                //         code = "UNEXPECTED",
+                //         message = "The operation failed.",
+                //         requestId = request
+                //     });
+            }
+        }
+    }
+
+    [RoutePrefix("api/v1/tools")]
+    public sealed class ToolsController : ApiControllerBase
+    {
+        [HttpGet, Route("")]
+        public IHttpActionResult Get() => Ok(Repo.GetTools());
+    }
+
+    [RoutePrefix("api/v1/members")]
+    public sealed class MembersController : ApiControllerBase
+    {
+        [HttpGet, Route("{id:int}")]
+        public IHttpActionResult Get(int id)
+        {
+            var x = Repo.GetMember(id);
+            return x == null ? (IHttpActionResult)NotFound() : Ok(x);
+        }
+    }
+
+    [RoutePrefix("api/v1/reservations")]
+    public sealed class ReservationsController : ApiControllerBase
+    {
+        [HttpPost, Route("")]
+        public IHttpActionResult Post(ReservationRequest x)
+        {
+            if (x == null)
+            {
+                return BadRequest("A request body is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Write((r, k) => Repo.Reserve(x, Actor, r, k));
+        }
+    }
+
+    [RoutePrefix("api/v1/checkouts")]
+    public sealed class CheckoutsController : ApiControllerBase
+    {
+        [HttpPost, Route("")]
+        public IHttpActionResult Post(CheckoutRequest x)
+        {
+            if (x == null)
+            {
+                return BadRequest("A request body is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Write((r, k) => Repo.Checkout(x, Actor, r, k));
+        }
+    }
+
+    [RoutePrefix("api/v1/returns")]
+    public sealed class ReturnsController : ApiControllerBase
+    {
+        [HttpPost, Route("")]
+        public IHttpActionResult Post(ReturnRequest x)
+        {
+            if (x == null)
+            {
+                return BadRequest("A request body is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Write((r, k) => Repo.Return(x, Actor, r, k));
+        }
+    }
+
+    [RoutePrefix("api/v1/audit")]
+    public sealed class AuditController : ApiControllerBase
+    {
+        [HttpGet, Route("")]
+        public IHttpActionResult Get(int take = 100) => Ok(Repo.GetAudit(take));
+    }
+
+    [RoutePrefix("api/v1/health")]
+    public sealed class HealthController : ApiControllerBase
+    {
+        [HttpGet, Route("")]
+        public IHttpActionResult Get()
+        {
+            try
+            {
+                Repo.GetTools();
+                return Ok(new { status = "ok" });
+            }
+            catch
+            {
+                return Content(
+                    HttpStatusCode.ServiceUnavailable,
+                    new { status = "database-unavailable" }
+                );
+            }
+        }
+    }
 }

@@ -1,1 +1,56 @@
-<?xml version="1.0" encoding="utf-8"?><Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"><ItemGroup Label="ProjectConfigurations"><ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration><ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration></ItemGroup><PropertyGroup Label="Globals"><ProjectGuid>{A1909EC8-CA84-4117-A388-FA186374A702}</ProjectGuid><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup><Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/><PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet></PropertyGroup><PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration"><ConfigurationType>Application</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet></PropertyGroup><Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/><PropertyGroup><OutDir>$(SolutionDir)artifacts\x86\$(Configuration)\</OutDir><IntDir>$(SolutionDir)artifacts\obj\DesktopClient\$(Configuration)\</IntDir></PropertyGroup><ItemDefinitionGroup><ClCompile><AdditionalIncludeDirectories>$(SolutionDir)src\NativeRules</AdditionalIncludeDirectories><WarningLevel>Level4</WarningLevel><SDLCheck>true</SDLCheck></ClCompile><Link><SubSystem>Windows</SubSystem><AdditionalDependencies>NativeRules.lib;winhttp.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies><AdditionalLibraryDirectories>$(SolutionDir)artifacts\x86\$(Configuration)</AdditionalLibraryDirectories></Link></ItemDefinitionGroup><ItemGroup><ClCompile Include="main.cpp"/></ItemGroup><ItemGroup><ProjectReference Include="..\NativeRules\NativeRules.vcxproj"><Project>{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}</Project></ProjectReference></ItemGroup><Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/></Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1909EC8-CA84-4117-A388-FA186374A702}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)artifacts\x86\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)artifacts\obj\DesktopClient\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\NativeRules</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>NativeRules.lib;winhttp.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)artifacts\x86\$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NativeRules\NativeRules.vcxproj">
+      <Project>{5DCD6CC7-39FA-4A72-8C9E-5407D6C19101}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

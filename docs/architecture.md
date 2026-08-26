@@ -4,6 +4,7 @@
 Win32 x86 client
   |-- UI validation and confirmation
   |-- NativeRules.dll (eligibility and tier limits)
+  |-- practice-shared API credential read from local/SMB file
   |
   +---- HTTP/JSON + X-Api-Key ----> .NET Framework 4.8 Windows service
                                       |-- authorization
@@ -40,6 +41,8 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 - One site equals one service and one database.
 - Windows 11 Pro x64 is supported as a development and demonstration host; Windows Server 2019 remains the deployment reference.
 - All components are installed on or communicate over a local wired LAN with the server.
+- Legacy clients may read one practice-shared API credential from a common SMB file. This models
+  the assessed exposure; it does not provide user identity or per-workstation authorization.
 - No multi-tenant partitioning, WAN hosting, failover, or centralized management is implemented.
 - The client and native DLL are x86. The service also targets x86 to demonstrate 32-bit dependency pressure.
 - PostgreSQL is the source of truth. Direct table access by clients is unsupported.
