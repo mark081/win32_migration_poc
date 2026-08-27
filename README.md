@@ -108,7 +108,10 @@ The seeded API key, `demo-local-key`, and default database password are intentio
 
 ### Desktop client
 
-`src/DesktopClient` contains the Win32 executable. It renders the user interface, validates required fields, requests confirmation, loads member/tool information, invokes native eligibility checks, and calls the service with WinHTTP. It never connects directly to PostgreSQL.
+`src/DesktopClient` contains the Win32 executable. Its Lending, Add user, and Add tool tabs validate
+operator input, show generated record IDs, request confirmation, load member/tool information,
+invoke native eligibility checks, and call the service with WinHTTP. It never connects directly to
+PostgreSQL and never accepts operator-supplied database IDs for new records.
 
 ### Native rules library
 
@@ -253,7 +256,9 @@ The service listens on `http://localhost:8088/` by default. Every endpoint requi
 |---|---|---|
 | `GET` | `/api/v1/health` | Service and database health |
 | `GET` | `/api/v1/tools` | List tools and current status |
+| `POST` | `/api/v1/tools` | Create a tool with a database-generated ID |
 | `GET` | `/api/v1/members/{id}` | Load member eligibility context |
+| `POST` | `/api/v1/members` | Create a member with a database-generated ID |
 | `POST` | `/api/v1/reservations` | Reserve a tool |
 | `POST` | `/api/v1/checkouts` | Check out a tool |
 | `POST` | `/api/v1/returns` | Return a loan and calculate late fee |
@@ -301,6 +306,12 @@ The repository includes recommended extensions, build/test tasks, and native deb
 3. Press `Ctrl+Shift+B` to build Debug x86.
 4. Run **API: Run console (Debug)** and leave that terminal open.
 5. Press `F5` and select **Debug Win32 client (x86)**.
+
+Alternatively, launch a built client with a temporary Legacy credential file:
+
+```powershell
+.\scripts\Run-DesktopClient.ps1 -ApiKey 'demo-local-key' -Configuration Release
+```
 
 When VS Code is connected from macOS through Remote SSH, compilation and API execution occur on Windows. Use RDP to interact with the Win32 client window.
 

@@ -2,6 +2,7 @@
 
 ```text
 Win32 x86 client
+  |-- Lending, Add user, and Add tool tabs
   |-- UI validation and confirmation
   |-- NativeRules.dll (eligibility and tier limits)
   |-- practice-shared API credential read from local/SMB file
@@ -27,6 +28,7 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 | Rule | UI | Native DLL | Service | Database |
 |---|---:|---:|---:|---:|
 | Required fields/date shape | Primary | | DTO validation | |
+| Member and tool identifiers | Displays generated value | | Omits ID from create contract | Identity columns |
 | Tier checkout limit | Display | Primary precheck | Loads member state | Authoritative |
 | Maximum loan duration | Display | Primary precheck | Pass-through | Authoritative |
 | API authorization | | | Authoritative | |

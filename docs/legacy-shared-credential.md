@@ -40,6 +40,17 @@ To characterize an existing practice share, set the variable to a UNC path such 
 `\\practice-server\EaglesoftShared\client.credential`. This repository does not create an SMB
 share, open firewall port 445, or contain a real credential.
 
+For a development run, the launcher creates a temporary credential file, starts the selected
+client build, and removes the file when the client exits:
+
+```powershell
+.\scripts\Run-DesktopClient.ps1 -ApiKey 'demo-local-key' -Configuration Release
+```
+
+`Configuration` accepts `Debug` or `Release` and defaults to `Release`. Supplying a key directly on
+the command line can leave it in PowerShell history, so use only development credentials with this
+launcher.
+
 ## Security boundary and retirement
 
 The file authenticates the practice/client population, not an individual. Anyone who can read it

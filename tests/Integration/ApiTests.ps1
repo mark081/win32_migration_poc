@@ -76,13 +76,44 @@ Assert ($member.outstandingLoans[0].tool -eq 'Extension Ladder') 'member loan to
 # Invalid bodies and idempotency keys.
 Assert-ApiError { Post-Raw 'checkouts' 'null' } 400 $null 'null checkout body'
 Assert-ApiError { Post-Raw 'reservations' 'null' } 400 $null 'null reservation body'
+Assert-ApiError { Post-Raw 'members' 'null' } 400 $null 'null member body'
+Assert-ApiError { Post-Raw 'tools' 'null' } 400 $null 'null tool body'
 Assert-ApiError `
     { Post 'checkouts' @{ toolId = 0; memberId = 1; dueOn = $due } } `
     400 $null 'invalid checkout model'
 Assert-ApiError { Post 'returns' @{ loanId = 0 } } 400 $null 'invalid return model'
 Assert-ApiError `
+    { Post 'members' @{ displayName = ''; tier = 'UNKNOWN'; active = $true } } `
+    400 $null 'invalid member model'
+Assert-ApiError `
+    { Post 'tools' @{ assetTag = ''; displayName = ''; dailyLateFee = -1 } } `
+    400 $null 'invalid tool model'
+Assert-ApiError `
     { Post 'checkouts' @{ toolId = 1; memberId = 1; dueOn = $due } 'not-a-guid' } `
     400 $null 'malformed idempotency key'
+
+# Member and tool creation use database-generated identities and idempotent API writes.
+$memberKey = [guid]::NewGuid().ToString()
+$memberBody = @{ displayName = 'Generated Grace'; tier = 'SUPPORTER'; active = $true }
+$createdMember = Post 'members' $memberBody $memberKey
+$replayedMember = Post 'members' $memberBody $memberKey
+Assert ($createdMember.id -gt 4) 'member ID generated above seeded identities'
+Assert ($createdMember.id -eq $replayedMember.id) 'member creation is idempotent'
+$loadedMember = Invoke-RestMethod -Uri "$base/members/$($createdMember.id)" -Headers $headers
+Assert ($loadedMember.displayName -eq 'Generated Grace') 'generated member can be loaded'
+
+$toolKey = [guid]::NewGuid().ToString()
+$toolBody = @{ assetTag = 'TL-GENERATED'; displayName = 'Generated Router'; dailyLateFee = 2.75 }
+$createdTool = Post 'tools' $toolBody $toolKey
+$replayedTool = Post 'tools' $toolBody $toolKey
+Assert ($createdTool.id -gt 6) 'tool ID generated above seeded identities'
+Assert ($createdTool.id -eq $replayedTool.id) 'tool creation is idempotent'
+$toolsAfterCreate = Invoke-RestMethod -Uri "$base/tools" -Headers $headers
+$loadedTool = $toolsAfterCreate | Where-Object { $_.toolId -eq $createdTool.id }
+Assert ($loadedTool.displayName -eq 'Generated Router') 'generated tool is listed'
+Assert-ApiError `
+    { Post 'tools' @{ assetTag = 'TL-GENERATED'; displayName = 'Duplicate'; dailyLateFee = 1 } } `
+    409 'DUPLICATE' 'duplicate asset tag'
 
 # Reservation success and representative reservation failures.
 $reservation = Post 'reservations' @{
@@ -177,6 +208,10 @@ Assert (@($audit | Where-Object { $_.operation -eq 'CHECKOUT' }).Count -ge 1) `
     'checkout audited'
 Assert (@($audit | Where-Object { $_.operation -eq 'RETURN' }).Count -ge 1) `
     'return audited'
+Assert (@($audit | Where-Object { $_.operation -eq 'CREATE_MEMBER' }).Count -ge 1) `
+    'member creation audited'
+Assert (@($audit | Where-Object { $_.operation -eq 'CREATE_TOOL' }).Count -ge 1) `
+    'tool creation audited'
 
 # Two callers compete for the same reserved tool; only one can succeed.
 $jobs = 1..2 | ForEach-Object {

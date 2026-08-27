@@ -76,6 +76,101 @@ namespace ToolLending.AppServer
             return tools;
         }
 
+        public WriteResult CreateMember(
+            CreateMemberRequest member,
+            string actor,
+            Guid requestId,
+            Guid idempotencyKey
+        )
+        {
+            return Execute(
+                "create_member",
+                idempotencyKey,
+                member,
+                requestId,
+                (connection, transaction) =>
+                {
+                    int id;
+                    const string insertSql =
+                        @"
+                        INSERT INTO tool_lending.members(display_name, tier, active)
+                        VALUES (@name, CAST(@tier AS tool_lending.member_tier), @active)
+                        RETURNING member_id";
+
+                    using (var command = new NpgsqlCommand(insertSql, connection, transaction))
+                    {
+                        command.Parameters.Add("name", NpgsqlDbType.Varchar).Value =
+                            member.DisplayName.Trim();
+                        command.Parameters.Add("tier", NpgsqlDbType.Varchar).Value = member.Tier;
+                        command.Parameters.Add("active", NpgsqlDbType.Boolean).Value =
+                            member.Active;
+                        id = Convert.ToInt32(command.ExecuteScalar());
+                    }
+
+                    InsertAudit(
+                        connection,
+                        transaction,
+                        actor,
+                        "CREATE_MEMBER",
+                        "member",
+                        id,
+                        requestId
+                    );
+                    return new WriteResult
+                    {
+                        Id = id,
+                        Status = member.Active ? "ACTIVE" : "INACTIVE",
+                    };
+                }
+            );
+        }
+
+        public WriteResult CreateTool(
+            CreateToolRequest tool,
+            string actor,
+            Guid requestId,
+            Guid idempotencyKey
+        )
+        {
+            return Execute(
+                "create_tool",
+                idempotencyKey,
+                tool,
+                requestId,
+                (connection, transaction) =>
+                {
+                    int id;
+                    const string insertSql =
+                        @"
+                        INSERT INTO tool_lending.tools(asset_tag, display_name, daily_late_fee)
+                        VALUES (@assetTag, @name, @fee)
+                        RETURNING tool_id";
+
+                    using (var command = new NpgsqlCommand(insertSql, connection, transaction))
+                    {
+                        command.Parameters.Add("assetTag", NpgsqlDbType.Varchar).Value =
+                            tool.AssetTag.Trim();
+                        command.Parameters.Add("name", NpgsqlDbType.Varchar).Value =
+                            tool.DisplayName.Trim();
+                        command.Parameters.Add("fee", NpgsqlDbType.Numeric).Value =
+                            tool.DailyLateFee;
+                        id = Convert.ToInt32(command.ExecuteScalar());
+                    }
+
+                    InsertAudit(
+                        connection,
+                        transaction,
+                        actor,
+                        "CREATE_TOOL",
+                        "tool",
+                        id,
+                        requestId
+                    );
+                    return new WriteResult { Id = id, Status = "AVAILABLE" };
+                }
+            );
+        }
+
         public MemberDto GetMember(int id)
         {
             const string sql =
@@ -500,6 +595,35 @@ namespace ToolLending.AppServer
                         LateFee = reader.IsDBNull(4) ? (decimal?)null : reader.GetDecimal(4),
                     };
                 }
+            }
+        }
+
+        private static void InsertAudit(
+            NpgsqlConnection connection,
+            NpgsqlTransaction transaction,
+            string actor,
+            string operation,
+            string entityType,
+            int entityId,
+            Guid requestId
+        )
+        {
+            const string sql =
+                @"
+                INSERT INTO tool_lending.audit_log
+                    (actor, operation, entity_type, entity_id, request_id)
+                VALUES
+                    (@actor, @operation, @entityType, @entityId, @requestId)";
+
+            using (var command = new NpgsqlCommand(sql, connection, transaction))
+            {
+                command.Parameters.Add("actor", NpgsqlDbType.Varchar).Value = actor;
+                command.Parameters.Add("operation", NpgsqlDbType.Varchar).Value = operation;
+                command.Parameters.Add("entityType", NpgsqlDbType.Varchar).Value = entityType;
+                command.Parameters.Add("entityId", NpgsqlDbType.Varchar).Value =
+                    entityId.ToString();
+                command.Parameters.Add("requestId", NpgsqlDbType.Uuid).Value = requestId;
+                command.ExecuteNonQuery();
             }
         }
 

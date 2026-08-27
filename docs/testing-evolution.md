@@ -81,6 +81,7 @@ The API integration suite currently verifies:
 |---|---|
 | Health and reads | Healthy database connection, seeded tools, borrowed-tool details, member tier, and outstanding loans |
 | Request validation | Null checkout and reservation bodies, invalid model values, invalid return IDs, and malformed idempotency keys |
+| Record creation | Member and tool success, generated IDs, idempotent replay, invalid models, duplicate asset tags, reads, and audit entries |
 | Reservations | Success; invalid dates; inactive member; maintenance or already-reserved tool; missing tool or member |
 | Checkouts | Success; replay with the same idempotency key; inactive member; maintenance tool; overdue member; invalid due date; reservation owned by another member; missing tool or member; checkout limit |
 | Returns | Success, positive late fee, duplicate return, and missing loan |
@@ -99,6 +100,8 @@ The FlaUI/NUnit suite currently verifies:
 - Member, tool, due-date, loan, checkout, refresh, and return controls expose stable Automation IDs.
 - Attempting checkout without a member displays the expected `Validation` message.
 - A configured shared credential file is identified in the UI without exposing its secret value.
+- Add user and Add tool tabs expose stable controls and state that IDs are assigned automatically.
+- Missing required user input produces an actionable validation message.
 
 The UI runner creates a temporary local credential file to model the SMB-backed Legacy behavior
 without creating a network share or using a real secret. The client must fail closed when an
@@ -251,6 +254,8 @@ components.
 | `SEC-001` | Unauthenticated request rejected | API | TLS + credential contract | Both paths | Identity/RBAC contract |
 | `SEC-002` | Shared credential source visible without exposing its value | FlaUI + configuration | Externalized secret; no fallback | Legacy and new identities coexist explicitly | Practice-shared credential removed |
 | `UI-001` | Required checkout fields validated | FlaUI | Connected Win32 client | Legacy and new UI paths | Web UI equivalent |
+| `ADM-001` | Member creation assigns an ID and is idempotent | API + FlaUI wiring | Connected contract | Both paths | Tenant-scoped identity |
+| `ADM-002` | Tool creation assigns an ID and rejects duplicate asset tags | API + FlaUI wiring | Connected contract | Both paths | Tenant-scoped inventory identity |
 
 Expand this matrix whenever a rule, workflow, or failure mode is discovered. A modernization pull
 request that moves a responsibility should reference the affected scenario IDs.
