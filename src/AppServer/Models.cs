@@ -3,6 +3,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ToolLending.AppServer
 {
+    public sealed class CreateMemberRequest
+    {
+        [Required, StringLength(120, MinimumLength = 1)]
+        public string DisplayName { get; set; }
+
+        [Required, RegularExpression("^(STANDARD|SUPPORTER|STAFF)$")]
+        public string Tier { get; set; }
+
+        public bool Active { get; set; } = true;
+    }
+
+    public sealed class CreateToolRequest
+    {
+        [Required, StringLength(24, MinimumLength = 1)]
+        public string AssetTag { get; set; }
+
+        [Required, StringLength(120, MinimumLength = 1)]
+        public string DisplayName { get; set; }
+
+        [Range(typeof(decimal), "0", "99999999.99")]
+        public decimal DailyLateFee { get; set; }
+    }
+
     public sealed class ReservationRequest
     {
         [Range(1, int.MaxValue)]
