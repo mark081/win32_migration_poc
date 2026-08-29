@@ -1,0 +1,303 @@
+{
+  "schema_version": "1.0",
+  "source_revision": "94b5ac2445e715ebadd339124a94ca1a9378be61",
+  "source_fingerprint": "9858fe44281cc6d8e46efe70be16159507d7b40cafb88fea03e2f72921eb2b6b",
+  "source_worktree": "clean",
+  "entries": [
+    {
+      "path": ".clang-format",
+      "kind": "file",
+      "sha256": "1ea7b6debbd5327f1dc5ff2e211e39589228eaad845d848b57dcd4970f6c443f"
+    },
+    {
+      "path": ".config/dotnet-tools.json",
+      "kind": "file",
+      "sha256": "e834e7be0dc0bb51c3b75b015550274b50d5ef6609d88389caef03cbee5fc585"
+    },
+    {
+      "path": ".csharpierrc.json",
+      "kind": "file",
+      "sha256": "a2a40a7f15b315ef7b2eb17b6a90c18086ee2ed818a4735e88215e50d38486c9"
+    },
+    {
+      "path": ".editorconfig",
+      "kind": "file",
+      "sha256": "0fedc30537eb78efc1f82995a52fdd47fe2bb1f94e2d0c33459e3ae1ecc4cf9b"
+    },
+    {
+      "path": ".gitignore",
+      "kind": "file",
+      "sha256": "cbd7ad15028a63300be70744648e1b21c94f5ac7c37d5129f06170d6900ff534"
+    },
+    {
+      "path": ".vscode/extensions.json",
+      "kind": "file",
+      "sha256": "e53a1c52c78c82910e77b0bdba4c9befea3a4c0fa2eb8457cd0162a0a1b52359"
+    },
+    {
+      "path": ".vscode/launch.json",
+      "kind": "file",
+      "sha256": "4b7ec9cc31861a2d50017b7ac8f56703bac4b86d9a78257a1d35c31ba65bc33e"
+    },
+    {
+      "path": ".vscode/settings.json",
+      "kind": "file",
+      "sha256": "84533681af9f2d931862b50a6569f06a2513ce3d827236ef5108e21562aae57b"
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "kind": "file",
+      "sha256": "0c66ef184e9e143463d169af4f3a7383afeeb125080b0eff70b3814c48aa5649"
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "sha256": "9a1ba8337538a17d2eecb1d08719b9dcb61344106a2cec2d845cc26568919b18"
+    },
+    {
+      "path": "PSScriptAnalyzerSettings.psd1",
+      "kind": "file",
+      "sha256": "101916e942dec06ac4883b956cded7c03697d40102e74df2c8032ba06bc14c9a"
+    },
+    {
+      "path": "README.md",
+      "kind": "file",
+      "sha256": "b6d457dd4f238e05cc4bbae9457bc40b76f1455204b1f7f34e656858cf0ea914"
+    },
+    {
+      "path": "ToolLending.sln",
+      "kind": "file",
+      "sha256": "f0873e54f05a5422a9b6fdde70f18edd5695d26df84495583c78a728ef41ee6f"
+    },
+    {
+      "path": "config/legacy-client.credential.example",
+      "kind": "file",
+      "sha256": "09f6053785b5e5785d0bd99912de7cc2da89ee77ec1ac0f6b07c88d09489bcbc"
+    },
+    {
+      "path": "database/000_bootstrap.sql",
+      "kind": "file",
+      "sha256": "9f803e595d40ccc24e7dc5cf86acb8f261a915e1044dfc513e50a847fc56dc25"
+    },
+    {
+      "path": "database/001_schema.sql",
+      "kind": "file",
+      "sha256": "a64987f678f927114a458576a9a37ed1f9f6e2759d9a94e26635b475f776c2fe"
+    },
+    {
+      "path": "database/002_routines.sql",
+      "kind": "file",
+      "sha256": "1c221bdfa95650a094edcaaab6066c6bfa4bba21c80e7f485c570983c68aa921"
+    },
+    {
+      "path": "database/003_seed.sql",
+      "kind": "file",
+      "sha256": "63077d3ab55f0dcc14c4db69896b4efa8638bd5dc92039b707338ee70772c5c8"
+    },
+    {
+      "path": "database/900_reset.sql",
+      "kind": "file",
+      "sha256": "83ce83ffa1c9d13cf9c54d95c53f2155802a7abb72a3349f315db0f7871d35b7"
+    },
+    {
+      "path": "database/901_database_tests.sql",
+      "kind": "file",
+      "sha256": "c3660ec3b9a5bed2ac57fc64011ac8117ac0703fa6ac41884330186d5a5e7384"
+    },
+    {
+      "path": "docs/architecture.md",
+      "kind": "file",
+      "sha256": "9c6b0cdb027f5e1d383b8622b6856af0381ac6c4ced43973174fdfd86b6751d3"
+    },
+    {
+      "path": "docs/demo.md",
+      "kind": "file",
+      "sha256": "2d917ef5b082b45acad958f6a6014051a882fdb4d126ea422a540bfe7a423c6a"
+    },
+    {
+      "path": "docs/legacy-shared-credential.md",
+      "kind": "file",
+      "sha256": "1f1a06a7de545dbe2462869e6ea9ed9d49448709c5644a908c302a21ed270388"
+    },
+    {
+      "path": "docs/north-star-architecture.md",
+      "kind": "file",
+      "sha256": "c9962e6b3430b84d16f1cd08cc9e04d69588f1827a661730a696374e3b3cd364"
+    },
+    {
+      "path": "docs/testing-evolution.md",
+      "kind": "file",
+      "sha256": "5df6446536c3e9ccfece0cb05629b98450e06dd8eedaa9a12bc6928ba0391754"
+    },
+    {
+      "path": "docs/windows-11-pro-setup.md",
+      "kind": "file",
+      "sha256": "c395abf0d80613de31e857bbc3a910fe2d1cb21b904346fe1de401f7434d6d40"
+    },
+    {
+      "path": "docs/windows-server-2019-setup.md",
+      "kind": "file",
+      "sha256": "0037f64dd0ff0826a925f321a38148c5e8c7835be07693491bd10e59b696e695"
+    },
+    {
+      "path": "scripts/Backup-Database.ps1",
+      "kind": "file",
+      "sha256": "4e68bec58716a60813a7de4e2610c28467b3648e79a758798406c42fcfca4d79"
+    },
+    {
+      "path": "scripts/Build.ps1",
+      "kind": "file",
+      "sha256": "05a554ee944ff026766c4c70863ecc903ec42d25326913bd81089601035cf7bd"
+    },
+    {
+      "path": "scripts/Common.ps1",
+      "kind": "file",
+      "sha256": "19a36490db90235e916a66d423af1043ffb162c1b8f000b5ec080766da3f88d5"
+    },
+    {
+      "path": "scripts/Format-Code.ps1",
+      "kind": "file",
+      "sha256": "3066777438f35d34488a8b1892ed403ddeb75482a953350ec06654978d738146"
+    },
+    {
+      "path": "scripts/Initialize-Database.ps1",
+      "kind": "file",
+      "sha256": "55f7fcf0526924707f66feb54cabf9a490c42a5349da21cbacca32974a05cea5"
+    },
+    {
+      "path": "scripts/Install-Service.ps1",
+      "kind": "file",
+      "sha256": "470b350cea27615b823e262dcb0784eb30e39dfd0180892c92a82f1a8070250c"
+    },
+    {
+      "path": "scripts/Reset-Demo.ps1",
+      "kind": "file",
+      "sha256": "e468961e4282aeab56dba17d0b19b6b53ce51c4d5a4a7ac7e8aa018b110c2d19"
+    },
+    {
+      "path": "scripts/Run-DesktopClient.ps1",
+      "kind": "file",
+      "sha256": "4912976edd8dedba95b714cd47770f52f908d64aee44fa8c78ecd44c665cd918"
+    },
+    {
+      "path": "scripts/Run-Tests.ps1",
+      "kind": "file",
+      "sha256": "c1e42977f834f663293c57586ea78902ce27b2923ff7640cc37cae9e8c0f3a1e"
+    },
+    {
+      "path": "scripts/Run-UiTests.ps1",
+      "kind": "file",
+      "sha256": "546cedd0562137de57c20397654abdb1115e1c94d4b2a464ebd83e1ef1b744ae"
+    },
+    {
+      "path": "scripts/Setup-Prerequisites.ps1",
+      "kind": "file",
+      "sha256": "3129fc39e82669ffb35b4bff50ce53562d0e955015c53f7f232332b5d9eb1157"
+    },
+    {
+      "path": "scripts/Uninstall-Service.ps1",
+      "kind": "file",
+      "sha256": "95b95490611f4f58d1f6d12727f7169889f3266bebf393e7d31a8593382a7cb7"
+    },
+    {
+      "path": "src/AppServer/ApiKeyHandler.cs",
+      "kind": "file",
+      "sha256": "cbea6d1fe8204c617be8a5df139609b50365a5c47af6dc3974e0f476c57a2db4"
+    },
+    {
+      "path": "src/AppServer/App.config",
+      "kind": "file",
+      "sha256": "1fcddaa5aa448c2c55fb1603af21b52ca540e62690935b547be1c10d34a3f742"
+    },
+    {
+      "path": "src/AppServer/AppServer.csproj",
+      "kind": "file",
+      "sha256": "ac20a4fdcb69167b484eeed003b6fcf7de8c61ed87c0d0d52b9b3d48c0ab956d"
+    },
+    {
+      "path": "src/AppServer/Controllers.cs",
+      "kind": "file",
+      "sha256": "2100bb389edc734207a6834df888dd59e843b2ebf2a47a05cb58c741d43b5aec"
+    },
+    {
+      "path": "src/AppServer/Models.cs",
+      "kind": "file",
+      "sha256": "b5b89ef525503aedb3b62456fe403b96ccc1078d699647c149ecc8e0dfbd5143"
+    },
+    {
+      "path": "src/AppServer/Program.cs",
+      "kind": "file",
+      "sha256": "5dc98334b69593f17118a26cf64fe274bd17d7302512050b272f45859fe93427"
+    },
+    {
+      "path": "src/AppServer/Repository.cs",
+      "kind": "file",
+      "sha256": "a7e4633792f7489c387f72335763ae8ad127bfd8e58d5cf16743483641b3040a"
+    },
+    {
+      "path": "src/AppServer/Startup.cs",
+      "kind": "file",
+      "sha256": "808fd58d84c5521202e92e3dfc4198bc29448e817b57da30d67edebbcf9e6d91"
+    },
+    {
+      "path": "src/AppServer/packages.config",
+      "kind": "file",
+      "sha256": "2c93fd31edf771aa6f496bfadd79a7f755d5c4ee886c2363c110e32967d8549c"
+    },
+    {
+      "path": "src/DesktopClient/DesktopClient.vcxproj",
+      "kind": "file",
+      "sha256": "d38c99c90fcbb04f07a1b3c12a390ae76ff76a57a3b6fed990f879341bfe28a4"
+    },
+    {
+      "path": "src/DesktopClient/main.cpp",
+      "kind": "file",
+      "sha256": "52e0b41673a96b37005dd7c034cf4c8d8379c0e243b8afcbaf793de469c1832d"
+    },
+    {
+      "path": "src/NativeRules/NativeRules.cpp",
+      "kind": "file",
+      "sha256": "c709ea96a3c1d87ce78e0e8c011417222f99db7d60e8501b333505899b5f75c3"
+    },
+    {
+      "path": "src/NativeRules/NativeRules.h",
+      "kind": "file",
+      "sha256": "3c5c41f32d8140ae36fdd70fe6673d1972fca876c745ab68f50fb67a555572c5"
+    },
+    {
+      "path": "src/NativeRules/NativeRules.vcxproj",
+      "kind": "file",
+      "sha256": "f666b94c84b26af18f84c485a4e0554f7960a32a87d68fa60d4cc5d2e9e77e30"
+    },
+    {
+      "path": "src/NativeRules/dllmain.cpp",
+      "kind": "file",
+      "sha256": "2b7a6002a9b5e3ea7731c5df7abf10747247cf02f9e0ac597683ec659254eab9"
+    },
+    {
+      "path": "tests/DesktopClient.UiTests/DesktopClient.UiTests.csproj",
+      "kind": "file",
+      "sha256": "35712075e34009e69a995fddac2cd56c9a59ad1317efa6baf41ef0699e97266c"
+    },
+    {
+      "path": "tests/DesktopClient.UiTests/DesktopClientTests.cs",
+      "kind": "file",
+      "sha256": "116e18a3fdfbf950c09add813221646b7975e6db36e816212bf833a65f1d2919"
+    },
+    {
+      "path": "tests/Integration/ApiTests.ps1",
+      "kind": "file",
+      "sha256": "18324f09c62be56d3babf02c983e081755518dfefdfaf02c1f98043a289507f7"
+    },
+    {
+      "path": "tests/NativeRulesTests/NativeRulesTests.vcxproj",
+      "kind": "file",
+      "sha256": "a2e4def781308e373b600f20b1a6f5fa6afe1037399457fc00bb45531d787f41"
+    },
+    {
+      "path": "tests/NativeRulesTests/main.cpp",
+      "kind": "file",
+      "sha256": "8f2aa08bac6d4ee52fe50a985735b3b63ce0c84db1791781139e60171f40b622"
+    }
+  ]
+}
