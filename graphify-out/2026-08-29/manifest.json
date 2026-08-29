@@ -240,16 +240,16 @@
     "semantic_hash": "b2254faf45a9a8f2d1b16a5988e6c648"
   },
   "tests/NativeRulesTests/main.cpp": {
-    "mtime": 1787801381.7816253,
-    "seen": 1787970509.1622794,
-    "ast_hash": "cf2249893428ebdbc50167e071e183f0",
-    "semantic_hash": "cf2249893428ebdbc50167e071e183f0"
+    "mtime": 1788045708.1472328,
+    "seen": 1788045741.905723,
+    "ast_hash": "edcd0bfc94124e9b0fda2a09157af913",
+    "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1787952866.9431305,
-    "seen": 1787970509.1622806,
-    "ast_hash": "1ac8b02228d28ad4def279404e8a8826",
-    "semantic_hash": "1ac8b02228d28ad4def279404e8a8826"
+    "mtime": 1788021281.5450191,
+    "seen": 1788042242.5280576,
+    "ast_hash": "b86ba78d6bd36f04306048ab80e1144c",
+    "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1787801393.5220964,
@@ -292,5 +292,113 @@
     "seen": 1787970509.1622884,
     "ast_hash": "8d96c4b50a9642d25c3850348cd318e9",
     "semantic_hash": "8d96c4b50a9642d25c3850348cd318e9"
+  },
+  ".sdd/knowledge/source-manifest.json": {
+    "mtime": 1788042334.1634996,
+    "seen": 1788045741.9056728,
+    "ast_hash": "6a9fbb4dbbfc6b12ea1a7260bfc654df",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/architecture/index.md": {
+    "mtime": 1788042323.446004,
+    "seen": 1788045741.9057264,
+    "ast_hash": "db66e51dec5ce95ae136dfd39fea4a25",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/architecture/runtime-components.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057276,
+    "ast_hash": "271176a49aa704878659f42f5ba5b87f",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/bundle-state.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057288,
+    "ast_hash": "3096e03a0f81d12c49e0f786ca938c88",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/constraints.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.90573,
+    "ast_hash": "a592d4015c278812b87ae74391f2d38b",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/data/ownership.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.905731,
+    "ast_hash": "3bfecb2c8b2c1d57ba2d998e6f0916a2",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/glossary.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057324,
+    "ast_hash": "904df8560889cf9fd41752c85fcb0e1b",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/hotspots-and-risks.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057333,
+    "ast_hash": "839adac5d6703fccf0f30f12eff79719",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/index.md": {
+    "mtime": 1787970728.9672484,
+    "seen": 1788042242.5280542,
+    "ast_hash": "4e177bc086f4ace2d5d34f645fad3ba4",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/interfaces/api-v1.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057357,
+    "ast_hash": "12396053e92ba8926efa6cd53eefa999",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/open-questions.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057367,
+    "ast_hash": "63ff92dfbf680f131b695db6f0dd2504",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/operations/build-test-deploy.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.9057379,
+    "ast_hash": "bbc3ef4cfc6811681281f953e2dc89a8",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/system-overview.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.905739,
+    "ast_hash": "df0afcaf62577e17dea5f0e6028c42c3",
+    "semantic_hash": ""
+  },
+  "docs/demo.md": {
+    "mtime": 1787603432.463827,
+    "seen": 1788042242.52806,
+    "ast_hash": "cd524914fdebe4eccb1bd1a9e6f14674",
+    "semantic_hash": ""
+  },
+  ".sdd/knowledge/architecture/connected-feature-gating.md": {
+    "mtime": 1788042390.9478362,
+    "seen": 1788045741.905725,
+    "ast_hash": "e3ee89403946b7edc542f178861f7c94",
+    "semantic_hash": ""
+  },
+  "DESIGN.md": {
+    "mtime": 1788044999.101275,
+    "seen": 1788045741.9057412,
+    "ast_hash": "55f32597e343629609f7d6929639ec5a",
+    "semantic_hash": ""
+  },
+  "REQUIREMENTS.md": {
+    "mtime": 1788044634.3737707,
+    "seen": 1788045741.9057436,
+    "ast_hash": "c12b5fc5d9bad88a8573037b48f5caac",
+    "semantic_hash": ""
+  },
+  "TASKS.md": {
+    "mtime": 1788045514.8903475,
+    "seen": 1788045741.9057448,
+    "ast_hash": "ec8303f820e8ff72ba6f97c39da31cc2",
+    "semantic_hash": ""
   }
 }

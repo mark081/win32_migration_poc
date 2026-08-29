@@ -2,13 +2,14 @@
 title: Service-Owned Client Business Rules Implementation Plan
 document_id: TLM-CONNECTED-TASK-001
 version: 0.1
-status: draft
+status: approved
 created_at: 2026-08-29
 updated_at: 2026-08-29
 requirements: TLM-CONNECTED-REQ-001
 design: TLM-CONNECTED-DES-001
 reviewers: []
 approvals: []
+approved_at: 2026-08-29
 ---
 
 # Implementation Plan: Service-Owned Client Business Rules
@@ -36,11 +37,12 @@ The plan implements code and testability for Legacy, compare, and service modes;
 
 ### 1. Baseline and characterization
 
-- [ ] 1.1 Capture the pre-change Release and rule-behavior baseline
+- [x] 1.1 Capture the pre-change Release and rule-behavior baseline
   - Confirm branch/revision and run the clean Release build plus applicable native, database, API, and UI suites before changing runtime behavior. Add characterization assertions only where the approved service decision table lacks an observable Legacy baseline, including supported tiers, limit boundaries, active/overdue states, and due-date boundaries.
   - Acceptance: baseline commit `b9a5125` expectations and current revision results are recorded; existing failures/skips are explicitly dispositioned; no existing test is weakened; UI tests are run only in an interactive unlocked session.
   - Verification: `scripts/Build.ps1 -Configuration Release`, `scripts/Run-Tests.ps1 -Configuration Release`, and `scripts/Run-UiTests.ps1 -Configuration Release` when the session is valid; inspect scenario coverage for `LOAN-001` through `LOAN-004` and `UI-001`.
   - _Requirements: REQ-RULE-001, REQ-RULE-006, REQ-UI-001, REQ-TEST-001, REQ-TEST-002_
+  - Completion evidence: prerequisites passed on Windows Server 2019; Release rebuild passed with 6 existing warnings and 0 errors; after `Reset-Demo.ps1 -Force` corrected contaminated local data, `Run-Tests.ps1 -Configuration Release` passed native, database, and API suites including `LOAN-001`–`LOAN-004`. Expanded `tests/NativeRulesTests/main.cpp` across all tier limit/duration and eligibility boundaries; clang-format 19 dry-run and `NativeRulesTests.exe` passed. FlaUI/`UI-001` was not run because Session 0 is non-interactive and not a valid unlocked RDP session. Repository-wide formatting remains red on pre-existing unrelated files; changed test formatting passes. Known dependency warning: `NU1904` for `System.Text.Encodings.Web` 4.6.0. `graphify update .` rebuilt 379 nodes/578 edges; OKF operations coverage revised, manifest `cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85`, strict bundle validation passed.
 
 ### 2. Independent foundations
 
