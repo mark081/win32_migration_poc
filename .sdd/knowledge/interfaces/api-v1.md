@@ -10,13 +10,14 @@ sources:
   - resource: repo://src/AppServer/ApiKeyHandler.cs#L10-L24
   - resource: repo://src/DesktopClient/main.cpp#L124-L165
   - resource: repo://tests/Integration/ApiTests.ps1#L70-L239
+  - resource: repo://AGENTS.md#L81-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T02:30:05.1990492+00:00
+  at: 2026-08-29T22:25:34.1947474+00:00
 status: draft
-source_revision: 94b5ac2445e715ebadd339124a94ca1a9378be61
-source_fingerprint: 9858fe44281cc6d8e46efe70be16159507d7b40cafb88fea03e2f72921eb2b6b
-source_worktree: clean
+source_revision: 60c93421a8798b983091d7971a3f079d010579e8
+source_fingerprint: 080c303d93f7bcd7e5c6b158ac8e39f35a5fe7b68a8da9ebb08586f34678428a
+source_worktree: dirty
 curation_status: generated
 ---
 
@@ -33,3 +34,7 @@ The service exposes versioned `/api/v1` routes for tools, members, reservations,
 ## Current network limitation
 
 The client hard-codes `localhost:8088`, requests plain HTTP, and sets no explicit WinHTTP timeouts ([main.cpp:127](../../../src/DesktopClient/main.cpp#L127)). This does not yet satisfy the Connected remote/TLS/failure-handling gate.
+
+## Migration compatibility constraint
+
+The service must remain authoritative for the parent feature decision, but flag values and migration internals should not leak into domain payloads. Any client capability response must be explicitly versioned while existing `/api/v1` outcomes remain stable across `legacy`, `compare`, and `service` modes ([AGENTS.md:81](../../../AGENTS.md#L81), [AGENTS.md:103](../../../AGENTS.md#L103)).

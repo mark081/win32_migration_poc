@@ -13,11 +13,11 @@ sources:
   - resource: repo://docs/architecture.md#L26-L54
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T02:30:05.1990492+00:00
+  at: 2026-08-29T22:25:34.1947474+00:00
 status: draft
-source_revision: 94b5ac2445e715ebadd339124a94ca1a9378be61
-source_fingerprint: 9858fe44281cc6d8e46efe70be16159507d7b40cafb88fea03e2f72921eb2b6b
-source_worktree: clean
+source_revision: 60c93421a8798b983091d7971a3f079d010579e8
+source_fingerprint: 080c303d93f7bcd7e5c6b158ac8e39f35a5fe7b68a8da9ebb08586f34678428a
+source_worktree: dirty
 curation_status: generated
 ---
 
@@ -35,6 +35,8 @@ Business behavior is deliberately distributed. Client and DLL checks provide imm
 ## Ownership implication
 
 Moving authoritative decisions into the application service would conflict with the current Connected policy if it displaced locked PostgreSQL rules. A compatible interpretation is to remove duplicated domain decisions from the client while keeping presentation/input prechecks in the client, service orchestration at the API boundary, and transactional authority in existing routines.
+
+The migration cannot switch this responsibility at deployment time. It must preserve the existing client/native path when `connected.enabled` is false and use a child `legacy | compare | service` mode when the parent is true ([AGENTS.md:87](../../../AGENTS.md#L87)).
 
 ## Evidence confidence
 

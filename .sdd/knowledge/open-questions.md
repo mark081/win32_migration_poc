@@ -8,11 +8,11 @@ sources:
   - resource: repo://docs/testing-evolution.md#L47-L61
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T02:30:05.1990492+00:00
+  at: 2026-08-29T22:25:34.1947474+00:00
 status: draft
-source_revision: 94b5ac2445e715ebadd339124a94ca1a9378be61
-source_fingerprint: 9858fe44281cc6d8e46efe70be16159507d7b40cafb88fea03e2f72921eb2b6b
-source_worktree: clean
+source_revision: 60c93421a8798b983091d7971a3f079d010579e8
+source_fingerprint: 080c303d93f7bcd7e5c6b158ac8e39f35a5fe7b68a8da9ebb08586f34678428a
+source_worktree: dirty
 curation_status: generated
 ---
 
@@ -22,6 +22,9 @@ curation_status: generated
 2. Should the current `NativeRules.dll` be retired in this slice after equivalent service/API tests exist, or retained temporarily but no longer called by the production client?
 3. Should service-owned eligibility be exposed as a dedicated versioned decision endpoint, expressed only through command outcomes, or included as advisory fields in an existing member response?
 4. Is the intended slice limited to existing client-side domain decisions, or should it also address the prerequisite Connected transport gaps (configurable HTTPS endpoint, explicit timeouts, and actionable network errors) before making the client depend more heavily on the service?
+5. Which feature-flag provider or versioned local snapshot mechanism is approved for this POC, and what refresh interval, expiry, cohort key, and configuration version semantics apply?
+6. What workflow child key should govern checkout rule migration (for example `connected.checkout.rule-mode`), and what measurable exit criteria allow compare-to-service promotion and eventual child-flag removal?
+7. Should capability information be a dedicated versioned endpoint/response or remain entirely service-internal until the client needs presentation/routing information?
 
 # Evidence gaps
 

@@ -39,6 +39,69 @@ If code and documentation disagree, investigate and update the affected document
 
 ## Connected-stage boundaries
 
+### Mandatory Connected feature gate
+
+All runtime behavior introduced for migration or as new Connected functionality must be protected by the top-level feature flag:
+
+```text
+connected.enabled
+```
+
+The repository state at Connected branch commit `b9a5125` is the behavioral baseline. After this point, deploying new code must not activate new runtime behavior by itself.
+
+When `connected.enabled` is `false`, missing, expired, malformed, or cannot be evaluated, the application must preserve Legacy behavior. The safe fallback is always `false`.
+
+This parent flag is a global circuit breaker for Connected behavior:
+
+```text
+effectiveConnectedFeature = connected.enabled AND childFeatureEvaluation
+```
+
+A child flag such as `connected.checkout.service-rules` or `connected.events.publish` must never enable its behavior while `connected.enabled` is false. Environment, practice, deployment ring, client version, or other cohort targeting may narrow the parent flag, but may not bypass it.
+
+The flag applies to runtime behavior including:
+
+- Migrated business-rule execution.
+- New Connected API behavior or workflow routing.
+- Remote endpoint selection.
+- Reliable event and outbox publication.
+- Additive cloud integrations, projections, or analytics feeds.
+- Connected UI surfaces and capabilities.
+- Connected-specific synchronization, retries, or telemetry behavior.
+
+The following do not require runtime gating because they do not activate product behavior:
+
+- Tests, documentation, formatting, and build tooling.
+- Refactoring that is proven behaviorally equivalent.
+- Bug and security fixes that intentionally preserve or strengthen the Legacy contract.
+- The minimum flag-evaluation and capability plumbing needed to determine that `connected.enabled` is false.
+
+Any other exception requires explicit user approval and documentation of why it cannot be safely gated.
+
+The service is authoritative for evaluating `connected.enabled`. Clients may receive a capability decision from the service for presentation and routing, but must not independently turn Connected behavior on. A client-side decision is never authorization.
+
+Feature evaluation must not make an external network call on every business operation. Use a provider SDK cache or versioned local snapshot, define refresh and expiry behavior, and emit evaluation reason and configuration version without logging sensitive targeting data.
+
+`connected.enabled` must never disable authentication, authorization, tenant/practice isolation, input validation, audit, or other security controls.
+
+### Migration flag pattern
+
+Business-logic migrations should use a child mode beneath the parent gate:
+
+```text
+connected.enabled = false
+    -> Legacy implementation
+
+connected.enabled = true
+connected.<workflow>.rule-mode = legacy | compare | service
+```
+
+- `legacy` keeps the existing client/native behavior.
+- `compare` executes the new service rule in shadow mode, records normalized differences, and performs only one authoritative business write.
+- `service` makes the service result authoritative while retaining a documented rollback path.
+
+The public API contract should remain stable across modes. Flag values and migration internals should not leak into domain payloads unless the contract explicitly requires a capability response.
+
 ### What Connected must prove
 
 - The current desktop workflows operate against a configurable remote API endpoint.
@@ -95,6 +158,9 @@ Do not introduce any of the following as part of Connected work unless a separat
 8. **Protect compatibility.** Support documented old-client/new-service version combinations and fail clearly when a combination is unsupported.
 9. **Prefer a modular monolith.** Add internal modules and seams before adding deployable services. A new service requires evidence for independent scale, ownership, resilience, or deployment.
 10. **Keep infrastructure replaceable.** Isolate cloud SDKs, identity providers, messaging, and telemetry exporters behind application contracts where practical.
+11. **Gate all Connected runtime behavior.** New or migratory runtime behavior is inactive unless `connected.enabled` evaluates true; child flags can only narrow the rollout.
+12. **Keep evaluation authoritative and observable.** The service evaluates the parent flag, uses a safe false fallback, and records flag key, value, reason, configuration version, cohort key, and correlation ID without sensitive attributes.
+13. **Remove temporary migration flags.** After a migration is proven, expanded, and the Legacy implementation is intentionally retired, remove the child flag and dead path. Retain the parent circuit breaker throughout the Connected stage.
 
 ## Security and privacy
 
@@ -141,6 +207,12 @@ Minimum Connected evidence includes:
 - UI error handling without corrupted local or server state.
 - Representative read/write latency baseline.
 - Equivalent normalized API results, database state, and audit records in both environments.
+- `connected.enabled=false` produces the Legacy baseline for every affected workflow.
+- `connected.enabled=true` activates only the intended Connected behavior for the targeted cohort.
+- A true child flag cannot activate behavior while `connected.enabled` is false.
+- Missing, invalid, expired, unreachable, and timeout provider scenarios fall back to `false` without corrupting state.
+- Flag changes, evaluation reasons, configuration versions, and rollout cohorts are observable and auditable without exposing sensitive targeting data.
+- Compare mode records differences but performs exactly one authoritative business write.
 
 Standard commands:
 
@@ -206,6 +278,9 @@ A Connected change is complete only when:
 - Documentation reflects the implemented system.
 - No secrets, customer data, generated output, or machine-specific files are included.
 - The working tree contains only intentional changes.
+- All new or migratory runtime behavior is subordinate to `connected.enabled`.
+- Disabled, enabled, child-enabled/parent-disabled, and provider-failure flag paths are tested.
+- The flag owner, safe default, targeting context, rollback behavior, expected removal condition, and telemetry are documented.
 
 ## Agent handoff
 
