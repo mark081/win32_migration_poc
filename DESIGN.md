@@ -2,12 +2,13 @@
 title: Service-Owned Client Business Rules Design
 document_id: TLM-CONNECTED-DES-001
 version: 0.1
-status: draft
+status: approved
 created_at: 2026-08-29
 updated_at: 2026-08-29
 requirements: TLM-CONNECTED-REQ-001
 reviewers: []
 approvals: []
+approved_at: 2026-08-29
 ---
 
 # Design Document: Service-Owned Client Business Rules
