@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "source_revision": "b8c67274c7ff3579be20e4811fbd93f2d0c5e698",
-  "source_fingerprint": "cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85",
+  "source_revision": "a92466a48e26afbd15a296ad2fb00482d0227c12",
+  "source_fingerprint": "4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe",
   "source_worktree": "dirty",
   "entries": [
     {
@@ -67,7 +67,12 @@
     {
       "path": "ToolLending.sln",
       "kind": "file",
-      "sha256": "f0873e54f05a5422a9b6fdde70f18edd5695d26df84495583c78a728ef41ee6f"
+      "sha256": "29d123a1fe02c4ad90d5ae5cd44943b25d27dbed777969ba9bdd62ea56f63bf8"
+    },
+    {
+      "path": "config/connected-features.disabled.example.json",
+      "kind": "untracked",
+      "sha256": "aed8f08949866c379133a96afbc3b10f407503ed989f5ec35582628a36797703"
     },
     {
       "path": "config/legacy-client.credential.example",
@@ -182,7 +187,7 @@
     {
       "path": "scripts/Run-Tests.ps1",
       "kind": "file",
-      "sha256": "c1e42977f834f663293c57586ea78902ce27b2923ff7640cc37cae9e8c0f3a1e"
+      "sha256": "f6f653bff6aac6b9e8906e9f4e3c6dc6b438e48ee19ed14e7035c7df669b3b72"
     },
     {
       "path": "scripts/Run-UiTests.ps1",
@@ -207,12 +212,22 @@
     {
       "path": "src/AppServer/App.config",
       "kind": "file",
-      "sha256": "1fcddaa5aa448c2c55fb1603af21b52ca540e62690935b547be1c10d34a3f742"
+      "sha256": "1eeca23c204c5757ac297edd9e623d87444e79b0a849582983a62a535cce01ce"
     },
     {
       "path": "src/AppServer/AppServer.csproj",
       "kind": "file",
-      "sha256": "ac20a4fdcb69167b484eeed003b6fcf7de8c61ed87c0d0d52b9b3d48c0ab956d"
+      "sha256": "83139481f59146b57b0a09a04982b0bf3b13a16169fbc85f46de4f3cb4a2de53"
+    },
+    {
+      "path": "src/AppServer/ConnectedFeatures.cs",
+      "kind": "untracked",
+      "sha256": "fee548da462b62071e86238484099304b586aa6758b074e03b1c255c007ab3c8"
+    },
+    {
+      "path": "src/AppServer/ConnectedTelemetry.cs",
+      "kind": "untracked",
+      "sha256": "1092b1d85379a2cbcade7d291bfb28522f36b9143db98e6ed287ccb5813ab82d"
     },
     {
       "path": "src/AppServer/Controllers.cs",
@@ -228,6 +243,11 @@
       "path": "src/AppServer/Program.cs",
       "kind": "file",
       "sha256": "5dc98334b69593f17118a26cf64fe274bd17d7302512050b272f45859fe93427"
+    },
+    {
+      "path": "src/AppServer/Properties/AssemblyInfo.cs",
+      "kind": "untracked",
+      "sha256": "8056f0d25f783137ff2ee08d8a7f924ef75a8627565ee4e5d83f80b1dc1f6143"
     },
     {
       "path": "src/AppServer/Repository.cs",
@@ -257,12 +277,12 @@
     {
       "path": "src/NativeRules/NativeRules.cpp",
       "kind": "file",
-      "sha256": "c709ea96a3c1d87ce78e0e8c011417222f99db7d60e8501b333505899b5f75c3"
+      "sha256": "f8cf585672e276e03355b1ff69b1a3e7fb1d6e13ed593753a8c632b7751fddb8"
     },
     {
       "path": "src/NativeRules/NativeRules.h",
       "kind": "file",
-      "sha256": "3c5c41f32d8140ae36fdd70fe6673d1972fca876c745ab68f50fb67a555572c5"
+      "sha256": "8f0639d5489386f359f77c40096f2cf106f035090bed4f119bf940a7091bc9e0"
     },
     {
       "path": "src/NativeRules/NativeRules.vcxproj",
@@ -273,6 +293,16 @@
       "path": "src/NativeRules/dllmain.cpp",
       "kind": "file",
       "sha256": "2b7a6002a9b5e3ea7731c5df7abf10747247cf02f9e0ac597683ec659254eab9"
+    },
+    {
+      "path": "tests/AppServer.FeatureTests/AppServer.FeatureTests.csproj",
+      "kind": "untracked",
+      "sha256": "d691120b3cef99c6c09d22a1f49872a1bb19bfcdd3e5c1fa15f98a5733ad7a78"
+    },
+    {
+      "path": "tests/AppServer.FeatureTests/Program.cs",
+      "kind": "untracked",
+      "sha256": "0f19a255cdacb1e7937567bc0dbd563b0c3f786b3b795ce0e798deafe142c12c"
     },
     {
       "path": "tests/DesktopClient.UiTests/DesktopClient.UiTests.csproj",
@@ -297,7 +327,7 @@
     {
       "path": "tests/NativeRulesTests/main.cpp",
       "kind": "file",
-      "sha256": "561e7baf2af79e27264e5cc6ff811ad852b7a5db89aa5a5f700e4453c14b120c"
+      "sha256": "954d4345a512929b9211937ea9d1685297044e67c46c900305bd8e21eb065da8"
     }
   ]
 }

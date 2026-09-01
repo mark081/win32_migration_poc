@@ -9,14 +9,17 @@ sources:
   - resource: repo://src/NativeRules/NativeRules.cpp#L5-L28
   - resource: repo://src/AppServer/Controllers.cs#L121-L227
   - resource: repo://src/AppServer/Repository.cs#L174-L216
+  - resource: repo://src/AppServer/ConnectedFeatures.cs#L341-L472
+  - resource: repo://src/AppServer/ConnectedTelemetry.cs#L13-L453
+  - resource: repo://src/NativeRules/NativeRules.h#L8-L26
   - resource: repo://database/002_routines.sql#L3-L56
   - resource: repo://docs/architecture.md#L26-L54
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:23:48.5187993+00:00
+  at: 2026-08-31T16:27:53+00:00
 status: draft
-source_revision: b8c67274c7ff3579be20e4811fbd93f2d0c5e698
-source_fingerprint: cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85
+source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
+source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -28,8 +31,8 @@ Business behavior is deliberately distributed. Client and DLL checks provide imm
 ## Responsibilities
 
 - **Win32 client:** collects values, enforces required-field and numeric-shape checks, asks for confirmation, renders responses, and constructs API requests ([main.cpp:313](../../../src/DesktopClient/main.cpp#L313), [main.cpp:331](../../../src/DesktopClient/main.cpp#L331), [main.cpp:349](../../../src/DesktopClient/main.cpp#L349), [main.cpp:375](../../../src/DesktopClient/main.cpp#L375)). It also makes a duplicated checkout-eligibility decision from member state returned by the API and blocks the request locally when the DLL rejects it ([main.cpp:358](../../../src/DesktopClient/main.cpp#L358)).
-- **NativeRules DLL:** implements tier checkout limits, maximum loan durations, and eligibility from active/overdue/open-loan/tier inputs ([NativeRules.cpp:9](../../../src/NativeRules/NativeRules.cpp#L9), [NativeRules.cpp:17](../../../src/NativeRules/NativeRules.cpp#L17), [NativeRules.cpp:25](../../../src/NativeRules/NativeRules.cpp#L25)).
-- **Application service:** validates request DTOs, authenticates calls, reads eligibility context, coordinates idempotent transactions, calls stored routines, and translates stable database failures into HTTP responses ([Models.cs:6](../../../src/AppServer/Models.cs#L6), [Controllers.cs:46](../../../src/AppServer/Controllers.cs#L46), [Repository.cs:174](../../../src/AppServer/Repository.cs#L174)).
+- **NativeRules DLL:** implements tier checkout limits, maximum loan durations, and eligibility from active/overdue/open-loan/tier inputs. Its versioned structured export distinguishes allowed, inactive, overdue, limit-reached, and unsupported-tier results while the legacy boolean export delegates to it ([NativeRules.h:8](../../../src/NativeRules/NativeRules.h#L8), [NativeRules.cpp:25](../../../src/NativeRules/NativeRules.cpp#L25)).
+- **Application service:** validates request DTOs, authenticates calls, reads eligibility context, coordinates idempotent transactions, calls stored routines, and translates stable database failures into HTTP responses ([Models.cs:6](../../../src/AppServer/Models.cs#L6), [Controllers.cs:46](../../../src/AppServer/Controllers.cs#L46), [Repository.cs:174](../../../src/AppServer/Repository.cs#L174)). It also owns cached fail-closed feature evaluation and non-authoritative telemetry foundations: typed flag/comparison records, hashed cohort/input identities, bounded in-memory metrics, JSON diagnostics, failure isolation, and an in-memory test sink ([ConnectedFeatures.cs:341](../../../src/AppServer/ConnectedFeatures.cs#L341), [ConnectedTelemetry.cs:13](../../../src/AppServer/ConnectedTelemetry.cs#L13)). No API or workflow consumes either foundation yet.
 - **PostgreSQL:** owns tier functions and locked reservation, checkout, return, fee, audit, and durable state transitions ([002_routines.sql:3](../../../database/002_routines.sql#L3), [002_routines.sql:23](../../../database/002_routines.sql#L23), [002_routines.sql:45](../../../database/002_routines.sql#L45)).
 
 ## Ownership implication
@@ -41,4 +44,4 @@ The migration cannot switch this responsibility at deployment time. It must pres
 ## Evidence confidence
 
 - `EXTRACTED`: Graphify locates the client `Checkout()` entry point and service `Reserve`, `Checkout`, and `Return` repository methods.
-- `AMBIGUOUS`: Graphify could not parse `NativeRules.h` because of its export/calling-convention syntax. Direct inspection verifies its three exported functions ([NativeRules.h:8](../../../src/NativeRules/NativeRules.h#L8)).
+- `AMBIGUOUS`: Graphify could not parse `NativeRules.h` because of its export/calling-convention syntax. Direct inspection verifies the three legacy exports plus `CheckoutEligibilityReasonV1` ([NativeRules.h:17](../../../src/NativeRules/NativeRules.h#L17)).

@@ -7,10 +7,10 @@ sources:
   - resource: repo://docs/architecture.md#L26-L54
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:23:48.5187993+00:00
+  at: 2026-08-31T16:27:53+00:00
 status: draft
-source_revision: b8c67274c7ff3579be20e4811fbd93f2d0c5e698
-source_fingerprint: cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85
+source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
+source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -26,3 +26,4 @@ curation_status: generated
 - **Parent circuit breaker:** `connected.enabled`, evaluated authoritatively by the service and required to be true before any child Connected behavior can activate.
 - **Rule mode:** a workflow child selection of `legacy`, `compare`, or `service`; it narrows the parent gate and cannot override a false parent.
 - **Compare mode:** side-effect-free shadow evaluation of the service rule with normalized difference telemetry while the Legacy path remains active and exactly one authoritative write occurs.
+- **Connected telemetry:** additive, non-authoritative operational evidence for flag evaluation, rule comparison, counts, and durations. It contains hashed cohort/input identities and cannot change or retry a workflow operation.

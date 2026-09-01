@@ -22,8 +22,23 @@ int __stdcall MaximumLoanDays(const wchar_t *tier)
         return 14;
     return tier_is(tier, L"STANDARD") ? 7 : 0;
 }
+CheckoutEligibilityReasonCode __stdcall CheckoutEligibilityReasonV1(int active, int overdue,
+                                                                    int openLoans,
+                                                                    const wchar_t *tier)
+{
+    if (!active)
+        return NR_INACTIVE;
+
+    const int limit = CheckoutLimit(tier);
+    if (limit <= 0)
+        return NR_TIER_UNSUPPORTED;
+    if (overdue)
+        return NR_OVERDUE;
+    if (openLoans >= limit)
+        return NR_CHECKOUT_LIMIT_REACHED;
+    return NR_ALLOWED;
+}
 int __stdcall IsEligibleForCheckout(int active, int overdue, int openLoans, const wchar_t *tier)
 {
-    const int limit = CheckoutLimit(tier);
-    return active && !overdue && limit > 0 && openLoans < limit;
+    return CheckoutEligibilityReasonV1(active, overdue, openLoans, tier) == NR_ALLOWED;
 }

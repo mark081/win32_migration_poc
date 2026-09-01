@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:23:48.5187993+00:00
+  at: 2026-08-31T16:27:53+00:00
 status: draft
-source_revision: b8c67274c7ff3579be20e4811fbd93f2d0c5e698
-source_fingerprint: cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85
+source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
+source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -32,3 +32,16 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
 - Revised: build/test operations to record expanded NativeRules tier, duration, and eligibility-boundary characterization.
 - Unchanged after verification: system overview, runtime architecture, API interface, data ownership, feature-gate policy, constraints, hotspots, glossary, and open questions; Wave 0 changed tests only and introduced no runtime or ownership behavior.
 - Graph refresh: `graphify update .` rebuilt 379 nodes and 578 edges; the `NativeRules.h` parser limitation remains.
+
+## Wave 1 update disposition
+
+- Revised: Connected feature-gate policy and runtime components for the new fail-closed service evaluator foundation; build/test operations for its focused suite; runtime components and risks for the versioned NativeRules reason export and partially integrated flag foundation.
+- Unchanged after verification: system overview, API interface, data ownership, constraints, glossary, and open questions. Wave 1 adds internal foundations only; it does not change public routes, data ownership, workflow routing, or production behavior.
+- Graph refresh: `graphify update .` rebuilt 528 nodes and 907 edges. Graphify still reports `NativeRules.h` as partially extracted, so its ABI is verified directly from the header, implementation, tests, and `dumpbin` evidence.
+
+## Wave 2 update disposition
+
+- Revised: runtime components and Connected feature-gate policy for the additive telemetry contracts, JSON diagnostic sink, hashing/redaction boundary, bounded metrics, and sink-failure isolation; build/test operations for the focused telemetry checks; glossary for the non-authoritative telemetry definition.
+- Unchanged after verification: system overview, API interface, data ownership, constraints, hotspots and risks, and open questions. Wave 2 adds an internal, unwired service seam only; it changes no public route, workflow call path, data owner, database state, or runtime feature activation.
+- Graph refresh: `graphify update .` rebuilt 621 nodes and 1,083 edges. Graphify still reports `NativeRules.h` as partially extracted; the Wave 2 telemetry source and test dependencies were extracted successfully.
+- Pre-update manifest diff: added `src/AppServer/ConnectedTelemetry.cs` and modified the AppServer/test project plus feature-test harness. Reconciled fingerprint: `4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe`.

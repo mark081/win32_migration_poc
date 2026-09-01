@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "configurationVersion": "synthetic-disabled-example-1",
+  "issuedAt": "2099-01-01T00:00:00Z",
+  "expiresAt": "2099-01-02T00:00:00Z",
+  "connected": {
+    "enabled": false,
+    "targets": {
+      "environments": [],
+      "practiceKeys": [],
+      "rings": [],
+      "minimumClientVersion": "1.0.0"
+    },
+    "checkout": {
+      "ruleMode": "legacy",
+      "targets": {
+        "environments": [],
+        "practiceKeys": [],
+        "rings": []
+      }
+    }
+  }
+}

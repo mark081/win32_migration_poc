@@ -110,6 +110,9 @@
     <Compile Include="Models.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Controllers.cs" />
+    <Compile Include="ConnectedFeatures.cs" />
+    <Compile Include="ConnectedTelemetry.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

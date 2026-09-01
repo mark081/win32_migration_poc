@@ -1,0 +1,476 @@
+{
+  "communities": {
+    "0": [
+      "npgsqlconnection",
+      "npgsqltransaction",
+      "src_appserver_models",
+      "src_appserver_models_cs_datetime",
+      "src_appserver_models_cs_guid",
+      "src_appserver_models_cs_ilist",
+      "src_appserver_models_toollending_appserver_auditdto",
+      "src_appserver_models_toollending_appserver_checkoutrequest",
+      "src_appserver_models_toollending_appserver_checkoutrequest_dueon",
+      "src_appserver_models_toollending_appserver_checkoutrequest_memberid",
+      "src_appserver_models_toollending_appserver_checkoutrequest_toolid",
+      "src_appserver_models_toollending_appserver_creatememberrequest",
+      "src_appserver_models_toollending_appserver_creatememberrequest_active",
+      "src_appserver_models_toollending_appserver_creatememberrequest_displayname",
+      "src_appserver_models_toollending_appserver_creatememberrequest_tier",
+      "src_appserver_models_toollending_appserver_createtoolrequest",
+      "src_appserver_models_toollending_appserver_createtoolrequest_assettag",
+      "src_appserver_models_toollending_appserver_createtoolrequest_dailylatefee",
+      "src_appserver_models_toollending_appserver_createtoolrequest_displayname",
+      "src_appserver_models_toollending_appserver_memberdto",
+      "src_appserver_models_toollending_appserver_outstandingloandto",
+      "src_appserver_models_toollending_appserver_reservationrequest",
+      "src_appserver_models_toollending_appserver_reservationrequest_endson",
+      "src_appserver_models_toollending_appserver_reservationrequest_memberid",
+      "src_appserver_models_toollending_appserver_reservationrequest_startson",
+      "src_appserver_models_toollending_appserver_reservationrequest_toolid",
+      "src_appserver_models_toollending_appserver_returnrequest",
+      "src_appserver_models_toollending_appserver_returnrequest_loanid",
+      "src_appserver_models_toollending_appserver_tooldto",
+      "src_appserver_models_toollending_appserver_writeresult",
+      "src_appserver_repository_cs_datetime",
+      "src_appserver_repository_cs_func",
+      "src_appserver_repository_cs_guid",
+      "src_appserver_repository_cs_ilist",
+      "src_appserver_repository_toollending_appserver_repository",
+      "src_appserver_repository_toollending_appserver_repository_call",
+      "src_appserver_repository_toollending_appserver_repository_checkout",
+      "src_appserver_repository_toollending_appserver_repository_createmember",
+      "src_appserver_repository_toollending_appserver_repository_createtool",
+      "src_appserver_repository_toollending_appserver_repository_execute",
+      "src_appserver_repository_toollending_appserver_repository_getaudit",
+      "src_appserver_repository_toollending_appserver_repository_getmember",
+      "src_appserver_repository_toollending_appserver_repository_gettools",
+      "src_appserver_repository_toollending_appserver_repository_hash",
+      "src_appserver_repository_toollending_appserver_repository_insertaudit",
+      "src_appserver_repository_toollending_appserver_repository_open",
+      "src_appserver_repository_toollending_appserver_repository_reserve",
+      "src_appserver_repository_toollending_appserver_repository_return"
+    ],
+    "1": [
+      "hinstance",
+      "hwnd",
+      "lparam",
+      "lpwstr",
+      "lresult",
+      "src_desktopclient_main",
+      "src_desktopclient_main_addtool",
+      "src_desktopclient_main_adduser",
+      "src_desktopclient_main_checkout",
+      "src_desktopclient_main_cpp_dword",
+      "src_desktopclient_main_cpp_wchar_t",
+      "src_desktopclient_main_environmentvalue",
+      "src_desktopclient_main_http",
+      "src_desktopclient_main_jsonbool",
+      "src_desktopclient_main_jsonescape",
+      "src_desktopclient_main_jsonint",
+      "src_desktopclient_main_jsonstring",
+      "src_desktopclient_main_loadlegacycredential",
+      "src_desktopclient_main_newguid",
+      "src_desktopclient_main_prettyjson",
+      "src_desktopclient_main_returntool",
+      "src_desktopclient_main_screencontrol",
+      "src_desktopclient_main_setoutput",
+      "src_desktopclient_main_showscreen",
+      "src_desktopclient_main_text",
+      "src_desktopclient_main_utf8",
+      "src_desktopclient_main_wide",
+      "src_desktopclient_main_windowproc",
+      "src_desktopclient_main_wwinmain",
+      "string",
+      "uint",
+      "vector",
+      "wparam",
+      "wstring"
+    ],
+    "2": [
+      "apicontroller",
+      "httpget",
+      "httppost",
+      "ihttpactionresult",
+      "route",
+      "src_appserver_controllers",
+      "src_appserver_controllers_cs_func",
+      "src_appserver_controllers_cs_guid",
+      "src_appserver_controllers_toollending_appserver_apicontrollerbase",
+      "src_appserver_controllers_toollending_appserver_apicontrollerbase_actor",
+      "src_appserver_controllers_toollending_appserver_apicontrollerbase_key",
+      "src_appserver_controllers_toollending_appserver_apicontrollerbase_write",
+      "src_appserver_controllers_toollending_appserver_auditcontroller",
+      "src_appserver_controllers_toollending_appserver_auditcontroller_get",
+      "src_appserver_controllers_toollending_appserver_checkoutscontroller",
+      "src_appserver_controllers_toollending_appserver_checkoutscontroller_post",
+      "src_appserver_controllers_toollending_appserver_healthcontroller",
+      "src_appserver_controllers_toollending_appserver_healthcontroller_get",
+      "src_appserver_controllers_toollending_appserver_memberscontroller",
+      "src_appserver_controllers_toollending_appserver_memberscontroller_get",
+      "src_appserver_controllers_toollending_appserver_memberscontroller_post",
+      "src_appserver_controllers_toollending_appserver_reservationscontroller",
+      "src_appserver_controllers_toollending_appserver_reservationscontroller_post",
+      "src_appserver_controllers_toollending_appserver_returnscontroller",
+      "src_appserver_controllers_toollending_appserver_returnscontroller_post",
+      "src_appserver_controllers_toollending_appserver_toolscontroller",
+      "src_appserver_controllers_toollending_appserver_toolscontroller_get",
+      "src_appserver_controllers_toollending_appserver_toolscontroller_post"
+    ],
+    "3": [
+      "application",
+      "automationelement",
+      "csharp_namespace:ee7507285d25b928",
+      "setup",
+      "teardown",
+      "test",
+      "tests_desktopclient_uitests_desktopclienttests",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_addtooltabexposesgeneratedidworkflow",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_addusertabexposesgeneratedidworkflow",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_adduserwithoutnameshowsvalidationmessage",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_assertcontrol",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_checkoutwithmissingmembershowsvalidationmessage",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_displayssharedcredentialsourcewithoutexposingcredential",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_exposesstableautomationidsforinteractivecontrols",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_find",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_selecttab",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_startclient",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_stopclient",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_waitformainwindow",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests_waitformodalwindow",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_legacycredentialstartuptests",
+      "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_legacycredentialstartuptests_missingconfiguredcredentialfilefailsclosed",
+      "uia3automation",
+      "window"
+    ],
+    "4": [
+      "cancellationtoken",
+      "csharp_namespace:244abd4107a609fd",
+      "delegatinghandler",
+      "httprequestmessage",
+      "httpresponsemessage",
+      "iappbuilder",
+      "idisposable",
+      "servicebase",
+      "src_appserver_apikeyhandler",
+      "src_appserver_apikeyhandler_toollending_appserver_apikeyhandler",
+      "src_appserver_apikeyhandler_toollending_appserver_apikeyhandler_equal",
+      "src_appserver_apikeyhandler_toollending_appserver_apikeyhandler_sendasync",
+      "src_appserver_program",
+      "src_appserver_program_toollending_appserver_program",
+      "src_appserver_program_toollending_appserver_program_main",
+      "src_appserver_program_toollending_appserver_toollendingservice",
+      "src_appserver_program_toollending_appserver_toollendingservice_onstart",
+      "src_appserver_program_toollending_appserver_toollendingservice_onstop",
+      "src_appserver_repository",
+      "src_appserver_startup",
+      "src_appserver_startup_toollending_appserver_startup",
+      "src_appserver_startup_toollending_appserver_startup_configuration",
+      "task"
+    ],
+    "5": [
+      "database_001_schema",
+      "database_001_schema_audit_log",
+      "database_001_schema_idempotency_records",
+      "database_001_schema_loans",
+      "database_001_schema_members",
+      "database_001_schema_reservations",
+      "database_001_schema_tools",
+      "database_002_routines",
+      "database_002_routines_checkout_tool",
+      "database_002_routines_reserve_tool",
+      "database_002_routines_return_tool",
+      "database_002_routines_tier_checkout_limit",
+      "database_002_routines_tier_max_loan_days"
+    ],
+    "6": [
+      "framework_net8_0_windows",
+      "nuget_flaui_core",
+      "nuget_flaui_uia3",
+      "nuget_microsoft_net_test_sdk",
+      "nuget_nunit",
+      "nuget_nunit3testadapter",
+      "sdk_microsoft_net_sdk",
+      "src_appserver_appserver",
+      "src_desktopclient_desktopclient",
+      "src_nativerules_nativerules",
+      "tests_desktopclient_uitests_desktopclient_uitests",
+      "tests_nativerulestests_nativerulestests",
+      "toollending"
+    ],
+    "7": [
+      "docs_architecture_architecture_and_rule_ownership",
+      "docs_legacy_shared_credential_model",
+      "docs_north_star_architecture_eaglesoft_poc_north_star_architecture",
+      "docs_testing_evolution",
+      "docs_windows_11_pro_setup",
+      "docs_windows_server_2019_setup",
+      "readme_appserver",
+      "readme_checkout_request_flow",
+      "readme_database",
+      "readme_desktopclient",
+      "readme_nativerules"
+    ],
+    "8": [
+      "src_nativerules_nativerules_checkoutlimit",
+      "src_nativerules_nativerules_cpp_src_nativerules_nativerules",
+      "src_nativerules_nativerules_cpp_wchar_t",
+      "src_nativerules_nativerules_h_src_nativerules_nativerules",
+      "src_nativerules_nativerules_iseligibleforcheckout",
+      "src_nativerules_nativerules_maximumloandays",
+      "src_nativerules_nativerules_tier_is",
+      "tests_nativerulestests_main",
+      "tests_nativerulestests_main_check",
+      "tests_nativerulestests_main_main"
+    ],
+    "9": [
+      "bool",
+      "hmodule",
+      "lpvoid",
+      "src_nativerules_dllmain",
+      "src_nativerules_dllmain_cpp_dword",
+      "src_nativerules_dllmain_dllmain"
+    ],
+    "10": [
+      "tests_integration_apitests",
+      "tests_integration_apitests_assert",
+      "tests_integration_apitests_assert_apierror",
+      "tests_integration_apitests_post",
+      "tests_integration_apitests_post_raw"
+    ],
+    "11": [
+      "scripts_common",
+      "scripts_common_app_password",
+      "scripts_common_app_psqlargs",
+      "scripts_common_require_command"
+    ],
+    "12": [
+      "scripts_format_code",
+      "scripts_format_code_set_formattedcontent"
+    ],
+    "13": [
+      "agents_mission"
+    ],
+    "14": [
+      "database_000_bootstrap"
+    ],
+    "15": [
+      "database_003_seed"
+    ],
+    "16": [
+      "database_900_reset"
+    ],
+    "17": [
+      "database_901_database_tests"
+    ],
+    "18": [
+      "docs_architecture_rule_distribution"
+    ],
+    "19": [
+      "docs_north_star_architecture"
+    ],
+    "20": [
+      "psscriptanalyzersettings"
+    ],
+    "21": [
+      "readme_api_surface"
+    ],
+    "22": [
+      "readme_build_and_run"
+    ],
+    "23": [
+      "readme_build_and_test_flow"
+    ],
+    "24": [
+      "readme_data_model"
+    ],
+    "25": [
+      "readme_failure_and_recovery_behavior"
+    ],
+    "26": [
+      "readme_tool_lending_modernization_reference_application"
+    ],
+    "27": [
+      "scripts_backup_database"
+    ],
+    "28": [
+      "scripts_build"
+    ],
+    "29": [
+      "scripts_initialize_database"
+    ],
+    "30": [
+      "scripts_install_service"
+    ],
+    "31": [
+      "scripts_reset_demo"
+    ],
+    "32": [
+      "scripts_run_desktopclient"
+    ],
+    "33": [
+      "scripts_run_tests"
+    ],
+    "34": [
+      "scripts_run_uitests"
+    ],
+    "35": [
+      "scripts_setup_prerequisites"
+    ],
+    "36": [
+      "scripts_uninstall_service"
+    ]
+  },
+  "cohesion": {
+    "0": 0.08421985815602837,
+    "1": 0.1711229946524064,
+    "2": 0.17195767195767195,
+    "3": 0.17333333333333334,
+    "4": 0.1067193675889328,
+    "5": 0.2564102564102564,
+    "6": 0.15384615384615385,
+    "7": 0.4727272727272727,
+    "8": 0.4222222222222222,
+    "9": 0.3333333333333333,
+    "10": 0.5,
+    "11": 0.5,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0
+  },
+  "gods": [
+    {
+      "id": "tests_desktopclient_uitests_desktopclienttests_toollending_desktopclient_uitests_desktopclienttests",
+      "label": "DesktopClientTests",
+      "degree": 17
+    },
+    {
+      "id": "src_appserver_repository_toollending_appserver_repository",
+      "label": "Repository",
+      "degree": 15
+    },
+    {
+      "id": "src_desktopclient_main_windowproc",
+      "label": "WindowProc()",
+      "degree": 15
+    },
+    {
+      "id": "src_appserver_controllers_toollending_appserver_apicontrollerbase",
+      "label": "ApiControllerBase",
+      "degree": 13
+    },
+    {
+      "id": "src_appserver_models_toollending_appserver_writeresult",
+      "label": "WriteResult",
+      "degree": 11
+    },
+    {
+      "id": "src_desktopclient_main_checkout",
+      "label": "Checkout()",
+      "degree": 11
+    },
+    {
+      "id": "src_desktopclient_main_http",
+      "label": "Http()",
+      "degree": 9
+    },
+    {
+      "id": "readme_appserver",
+      "label": "Application Service",
+      "degree": 9
+    },
+    {
+      "id": "readme_database",
+      "label": "Database",
+      "degree": 9
+    },
+    {
+      "id": "tests_desktopclient_uitests_desktopclient_uitests",
+      "label": "DesktopClient.UiTests",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Eaglesoft POC North Star Architecture",
+      "target": "Application Service",
+      "source_files": [
+        "docs/north-star-architecture.md",
+        "README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Eaglesoft POC North Star Architecture` unexpectedly reaches hub `Application Service`"
+    },
+    {
+      "source": "Eaglesoft POC North Star Architecture",
+      "target": "Database",
+      "source_files": [
+        "docs/north-star-architecture.md",
+        "README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Eaglesoft POC North Star Architecture` unexpectedly reaches hub `Database`"
+    },
+    {
+      "source": "Windows Server 2019 Setup",
+      "target": "Application Service",
+      "source_files": [
+        "docs/windows-server-2019-setup.md",
+        "README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Windows Server 2019 Setup` unexpectedly reaches hub `Application Service`"
+    },
+    {
+      "source": "Windows Server 2019 Setup",
+      "target": "Database",
+      "source_files": [
+        "docs/windows-server-2019-setup.md",
+        "README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Windows Server 2019 Setup` unexpectedly reaches hub `Database`"
+    },
+    {
+      "source": "main()",
+      "target": "CheckoutLimit()",
+      "source_files": [
+        "tests/NativeRulesTests/main.cpp",
+        "src/NativeRules/NativeRules.cpp"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    }
+  ],
+  "tokens": {
+    "input": 16843,
+    "output": 3200
+  }
+}

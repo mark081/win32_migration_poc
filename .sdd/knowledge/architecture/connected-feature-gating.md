@@ -8,12 +8,16 @@ sources:
   - resource: repo://AGENTS.md#L42-L103
   - resource: repo://AGENTS.md#L161-L163
   - resource: repo://AGENTS.md#L210-L215
+  - resource: repo://src/AppServer/ConnectedFeatures.cs#L11-L24
+  - resource: repo://src/AppServer/ConnectedFeatures.cs#L341-L472
+  - resource: repo://src/AppServer/ConnectedTelemetry.cs#L13-L385
+  - resource: repo://src/AppServer/App.config#L6-L12
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:23:48.5187993+00:00
+  at: 2026-08-31T16:27:53+00:00
 status: draft
-source_revision: b8c67274c7ff3579be20e4811fbd93f2d0c5e698
-source_fingerprint: cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85
+source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
+source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -35,4 +39,8 @@ A workflow child mode is `legacy`, `compare`, or `service` beneath the parent ga
 
 ## Implemented-state evidence
 
-`EXTRACTED`: a repository-wide direct source search at revision `60c93421a8798b983091d7971a3f079d010579e8` found `connected.enabled` and migration-mode references only in `AGENTS.md`; no runtime evaluator or provider integration is currently implemented. Planning must therefore include the minimum evaluation/capability plumbing before migrated rule execution.
+`EXTRACTED`: the application service now contains a provider-neutral, cached JSON snapshot evaluator with stable reason codes, parent dominance, child-mode validation, cohort narrowing, and bounded freshness/capability expiry ([ConnectedFeatures.cs:11](../../../src/AppServer/ConnectedFeatures.cs#L11), [ConnectedFeatures.cs:341](../../../src/AppServer/ConnectedFeatures.cs#L341)). Missing, malformed, stale, future-issued, inaccessible, and exception/timeout-like source failures resolve to a disabled parent and Legacy mode ([ConnectedFeatures.cs:367](../../../src/AppServer/ConnectedFeatures.cs#L367), [ConnectedFeatures.cs:454](../../../src/AppServer/ConnectedFeatures.cs#L454)).
+
+The configured snapshot path is empty by default, so this foundation activates no Connected runtime behavior ([App.config:6](../../../src/AppServer/App.config#L6)). It is not yet wired to a public capability API or any workflow router; those remain planned migration steps.
+
+The service also contains an additive telemetry seam for future flag and comparison evidence. It hashes raw cohort and normalized-input identities before storage, emits only explicit JSON fields, bounds metric-series cardinality, and isolates sink exceptions without retrying telemetry calls ([ConnectedTelemetry.cs:21](../../../src/AppServer/ConnectedTelemetry.cs#L21), [ConnectedTelemetry.cs:165](../../../src/AppServer/ConnectedTelemetry.cs#L165), [ConnectedTelemetry.cs:257](../../../src/AppServer/ConnectedTelemetry.cs#L257), [ConnectedTelemetry.cs:339](../../../src/AppServer/ConnectedTelemetry.cs#L339)). This seam is not connected to feature evaluation or business operations yet, so it produces no runtime behavior at this wave.

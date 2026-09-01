@@ -9,15 +9,17 @@ sources:
   - resource: repo://scripts/Run-Tests.ps1#L1-L6
   - resource: repo://scripts/Run-UiTests.ps1#L1-L27
   - resource: repo://tests/NativeRulesTests/main.cpp#L12-L43
+  - resource: repo://tests/AppServer.FeatureTests/Program.cs#L21-L252
+  - resource: repo://tests/AppServer.FeatureTests/Program.cs#L267-L392
   - resource: repo://docs/testing-evolution.md#L47-L256
   - resource: repo://README.md#L274-L359
   - resource: repo://AGENTS.md#L205-L215
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:23:48.5187993+00:00
+  at: 2026-08-31T16:27:53+00:00
 status: draft
-source_revision: b8c67274c7ff3579be20e4811fbd93f2d0c5e698
-source_fingerprint: cdec585793918f2fcb353b631b7d61f27993af00d37a19ba1c40a5d0a2081a85
+source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
+source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -28,10 +30,11 @@ The supported build is Windows/x86 using NuGet restore and MSBuild for the legac
 
 ## Verification layers
 
-- `Run-Tests.ps1` executes the NativeRules executable, PostgreSQL routine tests, then API integration tests ([Run-Tests.ps1:2](../../../scripts/Run-Tests.ps1#L2), [Run-Tests.ps1:4](../../../scripts/Run-Tests.ps1#L4), [Run-Tests.ps1:6](../../../scripts/Run-Tests.ps1#L6)).
+- `Run-Tests.ps1` executes the NativeRules and feature-evaluator executables, PostgreSQL routine tests, then API integration tests ([Run-Tests.ps1:2](../../../scripts/Run-Tests.ps1#L2), [Run-Tests.ps1:4](../../../scripts/Run-Tests.ps1#L4), [Run-Tests.ps1:6](../../../scripts/Run-Tests.ps1#L6)).
 - FlaUI tests require an interactive, unlocked desktop session ([Run-UiTests.ps1:6](../../../scripts/Run-UiTests.ps1#L6)).
 - Native rule tests remain regression evidence until equivalent service-level tests demonstrate the same decision table ([testing-evolution.md:47](../../../docs/testing-evolution.md#L47), [testing-evolution.md:60](../../../docs/testing-evolution.md#L60)).
-- The native suite characterizes all supported and unknown tier limits/durations plus eligibility below, at, and above tier limits, overdue, inactive, and unsupported-tier outcomes ([main.cpp:12](../../../tests/NativeRulesTests/main.cpp#L12)).
+- The native suite characterizes all supported and unknown tier limits/durations plus eligibility below, at, and above tier limits, overdue, inactive, and unsupported-tier outcomes, including equivalence between the legacy boolean and versioned structured reason export ([main.cpp:14](../../../tests/NativeRulesTests/main.cpp#L14)).
+- The feature suite covers disabled/missing/malformed/expired/future/stale/source-error/timeout-like states, cache refresh/call counts, parent dominance, child fallback, and targeting ([Program.cs:21](../../../tests/AppServer.FeatureTests/Program.cs#L21)). It also verifies the telemetry JSON schema, hashing/redaction, bounded metric series, duration summaries, one-attempt failure isolation, and the in-memory sink ([Program.cs:267](../../../tests/AppServer.FeatureTests/Program.cs#L267)).
 - UI tests should protect wiring and visible behavior; domain permutations belong primarily in native, service, or API tests ([testing-evolution.md:115](../../../docs/testing-evolution.md#L115)).
 
 ## Change-sensitive scenarios

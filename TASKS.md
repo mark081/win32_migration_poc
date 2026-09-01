@@ -46,23 +46,26 @@ The plan implements code and testability for Legacy, compare, and service modes;
 
 ### 2. Independent foundations
 
-- [ ] 2.1 Implement the fail-closed feature snapshot and evaluator foundation
+- [x] 2.1 Implement the fail-closed feature snapshot and evaluator foundation
   - Add AppServer feature models, `IConnectedFeatureSnapshotSource`, JSON-file source, immutable cache, evaluation context, targeting, refresh/expiry rules, stable reasons, and service-authoritative parent/child evaluation. Add a synthetic disabled example snapshot and external configuration keys without secrets.
   - Acceptance: parent dominance holds for the complete failure/targeting truth table; invalid child state yields Legacy; no external source call occurs per operation; snapshot replacement is atomic; defaults activate no Connected behavior.
   - Verification: focused AppServer unit/property tests for false/missing/malformed/expired/source-error/timeout/target-miss states, bounds validation, call counts, and child-enabled/parent-disabled cases.
   - _Requirements: REQ-FLAG-001, REQ-FLAG-002, REQ-FLAG-003, REQ-FLAG-004, REQ-FLAG-005, REQ-FLAG-006, REQ-FLAG-007, REQ-SEC-001, REQ-TEST-003_
+  - Completion evidence (2026-08-29): added the provider-neutral JSON snapshot source, immutable cached evaluator, bounded external configuration, stable fail-closed reasons, server-owned targeting context, disabled synthetic example, and `AppServer.FeatureTests` integration. The 13-case focused suite passed, including missing/false/malformed/expired/future/max-age/source-error/timeout-like/target-miss/refresh-call-count/parent-dominance paths; the complete Release non-UI gate passed after resetting the synthetic demo database and running the API. Defaults retain an empty snapshot path and activate no Connected workflow behavior.
 
-- [ ] 2.2 Extend NativeRules with a structured, ABI-compatible eligibility reason
+- [x] 2.2 Extend NativeRules with a structured, ABI-compatible eligibility reason
   - Add the versioned native reason enum/export, make the existing boolean eligibility export delegate to the structured result, and extend native tests for every reason and boundary without removing current exports or assertions.
   - Acceptance: existing callers remain binary/source compatible; boolean outcomes are unchanged; structured results distinguish allowed, inactive, overdue, limit, and unsupported-tier cases.
   - Verification: build x86 Debug/Release NativeRules and run `NativeRulesTests.exe`; compare all legacy boolean outcomes with structured results.
   - _Requirements: REQ-RULE-001, REQ-FLAG-008, REQ-TEST-001, REQ-TEST-002, REQ-REL-002_
+  - Completion evidence (2026-08-29): added the stable `CheckoutEligibilityReasonCode` values and versioned stdcall `CheckoutEligibilityReasonV1` export; the legacy boolean export now delegates to it. Debug and Release x86 builds/tests passed, every reason and supported-tier boundary is covered, boolean/structured outcomes agree, and `dumpbin` retained the three legacy exports while adding `_CheckoutEligibilityReasonV1@16`.
 
-- [ ] 2.3 Implement non-authoritative Connected telemetry contracts
+- [x] 2.3 Implement non-authoritative Connected telemetry contracts
   - Add `IConnectedTelemetrySink`, flag-evaluation/comparison record models, JSON diagnostic sink, bounded in-memory counters/durations, hashing/redaction helpers, and an in-memory test sink. Keep telemetry failure isolated from commands and database state.
   - Acceptance: required flag/comparison/correlation/version fields are emitted; secrets, authorization headers, names, raw bodies, and raw cohort attributes are absent; sink failure cannot fail or retry a business operation.
   - Verification: telemetry schema, redaction, counter-bound, duration, and failing-sink unit tests plus repository secret/log-content inspection.
   - _Requirements: REQ-SEC-002, REQ-OBS-001, REQ-OBS-002, REQ-OBS-003, REQ-OBS-004_
+  - Completion evidence (2026-08-31): added explicit flag/comparison records, SHA-256 cohort/input hashing, token redaction, JSON-lines diagnostics, 128-series bounded counters and duration summaries, a one-attempt exception-isolating wrapper, and an in-memory test sink without a new dependency or database state. Release build passed with 6 existing warnings and 0 errors; the 18-case feature/telemetry executable passed schema, sensitive-content exclusion, bounds, duration, in-memory, and failing-sink checks. After resetting contaminated synthetic data and starting the built API temporarily, `Run-Tests.ps1 -Configuration Release` passed native, feature/telemetry, database, and API suites. CSharpier and `git diff --check` passed; the telemetry source scan found no prohibited sensitive field names. FlaUI was not run because commands execute in disconnected Session 0/services rather than an interactive unlocked desktop; no client/UI code changed. `graphify update .` rebuilt 621 nodes/1,083 edges; affected OKF concepts were reconciled, manifest `4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe` was written, and strict OKF v0.2 validation passed.
 
 ### 3. Service rule and additive API contracts
 
