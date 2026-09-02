@@ -109,6 +109,8 @@
     <Compile Include="ApiKeyHandler.cs" />
     <Compile Include="Models.cs" />
     <Compile Include="Repository.cs" />
+    <Compile Include="CheckoutRules.cs" />
+    <Compile Include="Capabilities.cs" />
     <Compile Include="Controllers.cs" />
     <Compile Include="ConnectedFeatures.cs" />
     <Compile Include="ConnectedTelemetry.cs" />

@@ -7,15 +7,18 @@ sources:
   - resource: repo://src/DesktopClient/main.cpp#L349-L373
   - resource: repo://src/NativeRules/NativeRules.cpp#L9-L28
   - resource: repo://src/AppServer/Repository.cs#L174-L216
+  - resource: repo://src/AppServer/Repository.cs#L272-L321
+  - resource: repo://src/AppServer/CheckoutRules.cs#L91-L153
+  - resource: repo://src/AppServer/Capabilities.cs#L42-L166
   - resource: repo://database/002_routines.sql#L23-L42
   - resource: repo://docs/testing-evolution.md#L47-L61
   - resource: repo://AGENTS.md#L42-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:50:00+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---
@@ -27,7 +30,7 @@ curation_status: generated
 3. **Transport coupling:** hard-coded localhost HTTP and absent explicit timeouts mean removing local prechecks increases dependence on a network path that is not yet Connected-ready ([main.cpp:124](../../src/DesktopClient/main.cpp#L124)).
 4. **Test coupling:** `NativeRulesTests` protects decision-table parity; removal requires replacement service-level characterization before retirement ([testing-evolution.md:60](../../docs/testing-evolution.md#L60)).
 5. **Scope ambiguity:** “all business logic” could mistakenly include required-field checks, confirmation, formatting, and local failure presentation, despite policy assigning immediate operator validation to the client.
-6. **Partially integrated flag foundation:** a service-side fail-closed snapshot evaluator exists, but no capability endpoint or workflow router consumes it yet. Until that wiring is implemented and tested, production behavior remains entirely Legacy ([ConnectedFeatures.cs:341](../../src/AppServer/ConnectedFeatures.cs#L341), [App.config:6](../../src/AppServer/App.config#L6)).
+6. **Partially integrated service foundations:** the authenticated capability route now exposes the cached service-owned routing decision and telemetry, but no client router or checkout-decision route consumes it. The service rule evaluator remains unwired from product workflow, and the empty default snapshot keeps routing Legacy ([Capabilities.cs:63](../../src/AppServer/Capabilities.cs#L63), [Repository.cs:272](../../src/AppServer/Repository.cs#L272), [CheckoutRules.cs:117](../../src/AppServer/CheckoutRules.cs#L117)).
 
 # Risks
 

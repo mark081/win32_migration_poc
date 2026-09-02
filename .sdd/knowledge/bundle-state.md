@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-31T16:27:53+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---
@@ -45,3 +45,17 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
 - Unchanged after verification: system overview, API interface, data ownership, constraints, hotspots and risks, and open questions. Wave 2 adds an internal, unwired service seam only; it changes no public route, workflow call path, data owner, database state, or runtime feature activation.
 - Graph refresh: `graphify update .` rebuilt 621 nodes and 1,083 edges. Graphify still reports `NativeRules.h` as partially extracted; the Wave 2 telemetry source and test dependencies were extracted successfully.
 - Pre-update manifest diff: added `src/AppServer/ConnectedTelemetry.cs` and modified the AppServer/test project plus feature-test harness. Reconciled fingerprint: `4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe`.
+
+## Wave 3 update disposition
+
+- Revised: runtime components for the new read-only eligibility query and service evaluator; data ownership to record that the new decision performs no write and does not replace PostgreSQL checkout validation; build/test operations for the expanded decision, clock, repository, and before/after database checks; hotspots and risks to show that the foundations remain unwired from product routes.
+- Unchanged after verification: system overview, API interface, Connected feature-gate policy, constraints, glossary, and open questions. Wave 3 adds internal read/decision code only; it changes no route, client flow, database routine, workflow write, data owner, or runtime feature activation.
+- Graph refresh: `graphify update .` rebuilt 662 nodes and 1,171 edges. Graphify still reports `NativeRules.h` as partially extracted; the new C# evaluator and repository read were extracted successfully.
+- Pre-update manifest diff: added `src/AppServer/CheckoutRules.cs` and the feature-test configuration; modified the repository, AppServer/test projects, and focused test harness. Documentation-only changes from the reviewed foundation commit were also detected and verified not to alter runtime behavior.
+
+## Wave 4 update disposition
+
+- Revised: API interface for the authenticated versioned capability contract; runtime components and system overview for its service entry point; Connected feature-gate policy for bounded client-version narrowing and parent/child telemetry; build/test operations for capability contract and authentication coverage; hotspots and risks for the still-unwired client/decision paths.
+- Unchanged after verification: data ownership, constraints, glossary, and open questions. The route reads only cached feature state, emits non-authoritative diagnostics, and has no repository, workflow, idempotency, audit, or database dependency.
+- Graph refresh: `graphify update .` rebuilt 691 nodes and 1,233 edges. Graphify still reports `NativeRules.h` as partially extracted; the capability route, service adapter, evaluator/telemetry dependencies, and tests were extracted successfully.
+- Pre-update manifest diff: added `src/AppServer/Capabilities.cs`; modified the AppServer project, focused test harness, and API integration suite.

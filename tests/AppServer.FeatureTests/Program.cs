@@ -1,8 +1,16 @@
+// PURPOSE
+//
+// This executable runs focused checks for the Connected feature evaluator, telemetry, and the
+// service checkout rule foundation. It uses small in-process assertions instead of another test
+// framework. The repository case reads synthetic PostgreSQL data but never submits a workflow
+// command. This file is test-only and does not run in the product.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Npgsql;
 using ToolLending.AppServer;
 
 namespace ToolLending.AppServer.FeatureTests
@@ -42,6 +50,15 @@ namespace ToolLending.AppServer.FeatureTests
             Run("telemetry durations are summarized", TelemetryDurationsAreSummarized);
             Run("telemetry failures are isolated", TelemetryFailuresAreIsolated);
             Run("in-memory telemetry captures records", InMemoryTelemetryCapturesRecords);
+            Run("checkout decisions match the native rule table", CheckoutDecisionTable);
+            Run("checkout reason ordering is stable", CheckoutReasonOrderingIsStable);
+            Run("checkout due-date boundaries use a fixed clock", CheckoutDueDateBoundaries);
+            Run("member eligibility query is read only", MemberEligibilityQueryIsReadOnly);
+            Run("capability API maps every effective mode", CapabilityApiMapsEveryEffectiveMode);
+            Run(
+                "capability API rejects unsafe client versions",
+                CapabilityApiRejectsUnsafeVersions
+            );
             Console.WriteLine(
                 failures == 0
                     ? "All feature evaluator tests passed."
@@ -408,6 +425,436 @@ namespace ToolLending.AppServer.FeatureTests
             Equal(false, sink.FlagEvaluations[0].CohortKeyHash.Contains("practice-secret"));
         }
 
+        // Proves all supported tier limits and NativeRules eligibility boundaries have matching
+        // service outcomes for LOAN-001, LOAN-002, and LOAN-003.
+        private static void CheckoutDecisionTable()
+        {
+            var today = new DateTime(2026, 9, 1);
+            AssertDecision(
+                Member("STANDARD", true, false, 0, 2, 7),
+                today.AddDays(1),
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("STANDARD", true, false, 1, 2, 7),
+                today.AddDays(1),
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("STANDARD", true, false, 2, 2, 7),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("STANDARD", true, false, 3, 2, 7),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("SUPPORTER", true, false, 4, 5, 14),
+                today.AddDays(1),
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                5,
+                14
+            );
+            AssertDecision(
+                Member("SUPPORTER", true, false, 5, 5, 14),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                5,
+                14
+            );
+            AssertDecision(
+                Member("SUPPORTER", true, false, 6, 5, 14),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                5,
+                14
+            );
+            AssertDecision(
+                Member("STAFF", true, false, 9, 10, 30),
+                today.AddDays(1),
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                10,
+                30
+            );
+            AssertDecision(
+                Member("STAFF", true, false, 10, 10, 30),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                10,
+                30
+            );
+            AssertDecision(
+                Member("STAFF", true, false, 11, 10, 30),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                10,
+                30
+            );
+            AssertDecision(
+                Member("STANDARD", false, false, 0, 2, 7),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.MemberInactive,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("STANDARD", true, true, 0, 2, 7),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.Overdue,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("UNKNOWN", true, false, 0, 0, 0),
+                today.AddDays(1),
+                today,
+                false,
+                CheckoutDecisionReasons.TierUnsupported,
+                null,
+                null
+            );
+        }
+
+        // Proves multiple failures select the first reason in the approved presentation order.
+        private static void CheckoutReasonOrderingIsStable()
+        {
+            var today = new DateTime(2026, 9, 1);
+            AssertDecision(
+                null,
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.MemberNotFound,
+                null,
+                null
+            );
+            AssertDecision(
+                Member("UNKNOWN", false, true, 20, 0, 0),
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.MemberInactive,
+                0,
+                0
+            );
+            AssertDecision(
+                Member("UNKNOWN", true, true, 20, 0, 0),
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.TierUnsupported,
+                null,
+                null
+            );
+            AssertDecision(
+                Member("STANDARD", true, true, 2, 2, 7),
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.Overdue,
+                2,
+                7
+            );
+            AssertDecision(
+                Member("STANDARD", true, false, 2, 2, 7),
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached,
+                2,
+                7
+            );
+        }
+
+        // Proves today and the maximum tier date are allowed while dates on either side are denied.
+        // The fixed clock keeps this test independent of workstation time and time zone.
+        private static void CheckoutDueDateBoundaries()
+        {
+            IBusinessDateClock clock = new FixedBusinessDateClock(new DateTime(2026, 9, 1));
+            AssertDueDateBoundariesForTier(Member("STANDARD", true, false, 0, 2, 7), clock.Today);
+            AssertDueDateBoundariesForTier(Member("SUPPORTER", true, false, 0, 5, 14), clock.Today);
+            AssertDueDateBoundariesForTier(Member("STAFF", true, false, 0, 10, 30), clock.Today);
+        }
+
+        // Checks both sides of the allowed date range for one tier and its maximum duration.
+        private static void AssertDueDateBoundariesForTier(
+            MemberEligibilityContext member,
+            DateTime today
+        )
+        {
+            AssertDecision(
+                member,
+                today.AddDays(-1),
+                today,
+                false,
+                CheckoutDecisionReasons.DueDateInvalid,
+                member.CheckoutLimit,
+                member.MaximumLoanDays
+            );
+            AssertDecision(
+                member,
+                today,
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                member.CheckoutLimit,
+                member.MaximumLoanDays
+            );
+            AssertDecision(
+                member,
+                today.AddDays(member.MaximumLoanDays),
+                today,
+                true,
+                CheckoutDecisionReasons.Allowed,
+                member.CheckoutLimit,
+                member.MaximumLoanDays
+            );
+            AssertDecision(
+                member,
+                today.AddDays(member.MaximumLoanDays + 1),
+                today,
+                false,
+                CheckoutDecisionReasons.DueDateInvalid,
+                member.CheckoutLimit,
+                member.MaximumLoanDays
+            );
+        }
+
+        // Proves the repository reads PostgreSQL tier functions plus open and overdue loan facts,
+        // returns null for a missing member, and changes no workflow, retry, or audit table data.
+        private static void MemberEligibilityQueryIsReadOnly()
+        {
+            var connectionString = TestConnectionString();
+            var before = CaptureDatabaseState(connectionString);
+            var repository = new Repository(connectionString);
+            var today = DateTime.UtcNow.Date;
+            Equal(today, ReadDatabaseBusinessDate(connectionString));
+
+            var standard = repository.GetMemberEligibilityContext(1, today);
+            Equal(1, standard.MemberId);
+            Equal("STANDARD", standard.Tier);
+            Equal(true, standard.Active);
+            Equal(2, standard.CheckoutLimit);
+            Equal(7, standard.MaximumLoanDays);
+
+            var overdue = repository.GetMemberEligibilityContext(3, today);
+            Equal(true, overdue.HasOverdueLoan);
+            Equal(1, overdue.OpenLoans);
+            Equal<MemberEligibilityContext>(
+                null,
+                repository.GetMemberEligibilityContext(999999, today)
+            );
+            Equal(before, CaptureDatabaseState(connectionString));
+        }
+
+        // Creates a synthetic member context for one service decision-table row.
+        private static MemberEligibilityContext Member(
+            string tier,
+            bool active,
+            bool overdue,
+            int openLoans,
+            int checkoutLimit,
+            int maximumLoanDays
+        )
+        {
+            return new MemberEligibilityContext(
+                42,
+                tier,
+                active,
+                openLoans,
+                overdue,
+                checkoutLimit,
+                maximumLoanDays
+            );
+        }
+
+        // Evaluates one row and checks its stable reason plus presentation facts.
+        private static void AssertDecision(
+            MemberEligibilityContext member,
+            DateTime dueOn,
+            DateTime businessDate,
+            bool allowed,
+            string reason,
+            int? checkoutLimit,
+            int? maximumLoanDays
+        )
+        {
+            var decision = new CheckoutRuleEvaluator().Evaluate(member, dueOn, businessDate);
+            Equal(allowed, decision.Allowed);
+            Equal(reason, decision.Reason);
+            Equal(checkoutLimit, decision.CheckoutLimit);
+            Equal(maximumLoanDays, decision.MaximumLoanDays);
+        }
+
+        // Builds the local synthetic PostgreSQL connection without logging its password.
+        private static string TestConnectionString()
+        {
+            return new NpgsqlConnectionStringBuilder
+            {
+                Host = "127.0.0.1",
+                Port = 5432,
+                Database = "tool_lending",
+                Username = "tool_lending_app",
+                Password =
+                    Environment.GetEnvironmentVariable("TOOLLENDING_DB_PASSWORD")
+                    ?? "ChangeMe-LocalOnly!",
+                SearchPath = "tool_lending,public",
+            }.ConnectionString;
+        }
+
+        // Returns a fingerprint of every row in workflow, retry, and audit tables so a repository
+        // read can be checked for inserts, updates, and deletes.
+        private static string CaptureDatabaseState(string connectionString)
+        {
+            const string sql =
+                @"
+                SELECT concat_ws('|',
+                    (SELECT md5(coalesce(string_agg(to_jsonb(m)::text, '|' ORDER BY m.member_id), '')) FROM tool_lending.members m),
+                    (SELECT md5(coalesce(string_agg(to_jsonb(t)::text, '|' ORDER BY t.tool_id), '')) FROM tool_lending.tools t),
+                    (SELECT md5(coalesce(string_agg(to_jsonb(r)::text, '|' ORDER BY r.reservation_id), '')) FROM tool_lending.reservations r),
+                    (SELECT md5(coalesce(string_agg(to_jsonb(l)::text, '|' ORDER BY l.loan_id), '')) FROM tool_lending.loans l),
+                    (SELECT md5(coalesce(string_agg(to_jsonb(i)::text, '|' ORDER BY i.operation, i.idempotency_key), '')) FROM tool_lending.idempotency_records i),
+                    (SELECT md5(coalesce(string_agg(to_jsonb(a)::text, '|' ORDER BY a.audit_id), '')) FROM tool_lending.audit_log a))";
+
+            using (var connection = new NpgsqlConnection(connectionString))
+            using (var command = new NpgsqlCommand(sql, connection))
+            {
+                connection.Open();
+                return Convert.ToString(command.ExecuteScalar());
+            }
+        }
+
+        // Reads PostgreSQL's current date so the test proves it matches the service's UTC date.
+        // This guards the date boundary still used by the existing checkout routine.
+        private static DateTime ReadDatabaseBusinessDate(string connectionString)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            using (var command = new NpgsqlCommand("SELECT CURRENT_DATE", connection))
+            {
+                connection.Open();
+                return Convert.ToDateTime(command.ExecuteScalar()).Date;
+            }
+        }
+
+        // Proves the public capability shape preserves every server-selected parent/child state,
+        // freshness field, correlation ID, and safe reason while emitting evaluation telemetry.
+        private static void CapabilityApiMapsEveryEffectiveMode()
+        {
+            var cases = new[]
+            {
+                Capability(false, CheckoutRuleMode.Legacy, ConnectedFeatureReasons.ParentDisabled),
+                Capability(true, CheckoutRuleMode.Legacy, ConnectedFeatureReasons.Legacy),
+                Capability(true, CheckoutRuleMode.Compare, ConnectedFeatureReasons.Compare),
+                Capability(true, CheckoutRuleMode.Service, ConnectedFeatureReasons.Service),
+            };
+
+            foreach (var expected in cases)
+            {
+                var telemetry = new InMemoryConnectedTelemetrySink();
+                var service = new CapabilityService(new FixedEvaluator(expected), telemetry);
+                var actual = service.Get("1.2.3", expected.CorrelationId);
+                Equal(1, actual.SchemaVersion);
+                Equal(expected.ConfigurationVersion, actual.ConfigurationVersion);
+                Equal(expected.EvaluatedAt, actual.EvaluatedAt);
+                Equal(expected.ExpiresAt, actual.ExpiresAt);
+                Equal(expected.ConnectedEnabled, actual.ConnectedEnabled);
+                Equal(
+                    expected.CheckoutRuleMode.ToString().ToLowerInvariant(),
+                    actual.CheckoutRuleMode
+                );
+                Equal(expected.Reason, actual.Reason);
+                Equal(expected.CorrelationId, actual.CorrelationId);
+                Equal(2, telemetry.FlagEvaluations.Count);
+                Equal(expected.Reason, telemetry.FlagEvaluations[0].Reason);
+                Equal("connected.checkout.rule-mode", telemetry.FlagEvaluations[1].FlagKey);
+                Equal(false, telemetry.FlagEvaluations[0].CohortKeyHash.Contains("practice"));
+            }
+        }
+
+        // Proves missing, malformed, and overlong request versions can only narrow a server Service
+        // decision to Legacy. The original server configuration and freshness evidence is retained.
+        private static void CapabilityApiRejectsUnsafeVersions()
+        {
+            var expected = Capability(
+                true,
+                CheckoutRuleMode.Service,
+                ConnectedFeatureReasons.Service
+            );
+            var service = new CapabilityService(
+                new FixedEvaluator(expected),
+                new InMemoryConnectedTelemetrySink()
+            );
+
+            var missing = service.Get(null, expected.CorrelationId);
+            Equal(false, missing.ConnectedEnabled);
+            Equal("legacy", missing.CheckoutRuleMode);
+            Equal(CapabilityApiReasons.ClientVersionMissing, missing.Reason);
+            Equal(expected.ConfigurationVersion, missing.ConfigurationVersion);
+
+            foreach (var value in new[] { "not-semver", new string('9', 65) })
+            {
+                var invalid = service.Get(value, expected.CorrelationId);
+                Equal(false, invalid.ConnectedEnabled);
+                Equal("legacy", invalid.CheckoutRuleMode);
+                Equal(CapabilityApiReasons.ClientVersionInvalid, invalid.Reason);
+            }
+        }
+
+        // Creates one deterministic server decision for capability contract mapping tests.
+        private static ConnectedCapability Capability(
+            bool enabled,
+            CheckoutRuleMode mode,
+            string reason
+        )
+        {
+            var evaluatedAt = new DateTimeOffset(2026, 9, 2, 12, 0, 0, TimeSpan.Zero);
+            return new ConnectedCapability
+            {
+                SchemaVersion = 1,
+                ConfigurationVersion = "test-configuration-1",
+                EvaluatedAt = evaluatedAt,
+                ExpiresAt = evaluatedAt.AddSeconds(30),
+                ConnectedEnabled = enabled,
+                CheckoutRuleMode = mode,
+                Reason = reason,
+                CorrelationId = Guid.NewGuid(),
+            };
+        }
+
         // Fails a telemetry schema check when any named JSON field is absent.
         private static void HasFields(JObject value, params string[] names)
         {
@@ -515,6 +962,50 @@ namespace ToolLending.AppServer.FeatureTests
             }
 
             public DateTimeOffset UtcNow { get; set; }
+        }
+
+        // Supplies a fixed UTC business date to deterministic checkout boundary tests.
+        private sealed class FixedBusinessDateClock : IBusinessDateClock
+        {
+            // Stores the supplied date without its time-of-day component.
+            public FixedBusinessDateClock(DateTime today)
+            {
+                Today = today.Date;
+            }
+
+            public DateTime Today { get; }
+        }
+
+        // Returns one service-authored capability and captures the bounded client context supplied
+        // by the API adapter. It performs no feature-source or network work.
+        private sealed class FixedEvaluator : IConnectedFeatureEvaluator
+        {
+            private readonly ConnectedCapability capability;
+
+            // Stores the immutable decision returned by each focused API adapter test.
+            public FixedEvaluator(ConnectedCapability capability)
+            {
+                this.capability = capability;
+            }
+
+            // Returns a copy with the request correlation ID, matching production evaluator output.
+            public ConnectedCapability Evaluate(
+                FeatureEvaluationContext context,
+                Guid correlationId
+            )
+            {
+                return new ConnectedCapability
+                {
+                    SchemaVersion = capability.SchemaVersion,
+                    ConfigurationVersion = capability.ConfigurationVersion,
+                    EvaluatedAt = capability.EvaluatedAt,
+                    ExpiresAt = capability.ExpiresAt,
+                    ConnectedEnabled = capability.ConnectedEnabled,
+                    CheckoutRuleMode = capability.CheckoutRuleMode,
+                    Reason = capability.Reason,
+                    CorrelationId = correlationId,
+                };
+            }
         }
 
         // Returns the same load result and isolates evaluator behavior from file access.

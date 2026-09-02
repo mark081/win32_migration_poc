@@ -10,10 +10,10 @@ sources:
   - resource: repo://src/AppServer/AppServer.csproj#L9-L12
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:50:00+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---

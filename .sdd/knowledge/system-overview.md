@@ -8,13 +8,14 @@ sources:
   - resource: repo://README.md#L16-L59
   - resource: repo://src/DesktopClient/main.cpp#L124-L165
   - resource: repo://src/AppServer/Program.cs#L14-L37
+  - resource: repo://src/AppServer/Capabilities.cs#L126-L166
   - resource: repo://docs/architecture.md#L1-L26
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-29T23:50:00+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---
@@ -32,7 +33,7 @@ The application is a Windows/x86 client-server system. A native Win32 client cal
 ## Boundaries and dependencies
 
 - The client has an in-process link to `NativeRules.dll` and a network dependency on `/api/v1` ([DesktopClient.vcxproj:43](../../src/DesktopClient/DesktopClient.vcxproj#L43), [main.cpp:131](../../src/DesktopClient/main.cpp#L131)).
-- The service owns Npgsql access, API authentication, DTO validation, idempotency coordination, and database error translation ([README.md:122](../../README.md#L122)).
+- The service owns Npgsql access, API authentication, DTO validation, idempotency coordination, database error translation, and the additive service-authored capability response used by later Connected routing ([README.md:122](../../README.md#L122), [Capabilities.cs:126](../../src/AppServer/Capabilities.cs#L126)).
 - The current endpoint is hard-coded to unencrypted localhost HTTP in the client, while the service base address and key are configuration values ([main.cpp:131](../../src/DesktopClient/main.cpp#L131), [App.config:4](../../src/AppServer/App.config#L4)).
 
 ## Graph evidence

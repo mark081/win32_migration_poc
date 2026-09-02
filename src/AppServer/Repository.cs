@@ -1,3 +1,9 @@
+// PURPOSE
+//
+// This file is the AppServer's only path to PostgreSQL. It contains read queries and the existing
+// transaction-protected workflow writes. The desktop must never call PostgreSQL directly.
+// PostgreSQL routines still make the final checkout, reservation, and return decisions.
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,11 +16,27 @@ using NpgsqlTypes;
 
 namespace ToolLending.AppServer
 {
+    // Reads application data and submits workflow commands to PostgreSQL for AppServer controllers.
+    // Read methods do not change data. Existing write methods use PostgreSQL transactions, where
+    // the database makes the final business decision and writes the audit record.
     public sealed class Repository
     {
-        private readonly string connectionString = ConfigurationManager
-            .ConnectionStrings["ToolLending"]
-            .ConnectionString;
+        private readonly string connectionString;
+
+        // Uses the configured ToolLending connection for normal AppServer work.
+        // Startup fails as before when the required connection setting is absent.
+        public Repository()
+            : this(ConfigurationManager.ConnectionStrings["ToolLending"].ConnectionString) { }
+
+        // Uses an explicit connection for focused repository tests without changing product
+        // configuration. Empty values are rejected before any database connection is attempted.
+        internal Repository(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException("A database connection string is required.");
+
+            this.connectionString = connectionString;
+        }
 
         private NpgsqlConnection Open()
         {
@@ -247,6 +269,56 @@ namespace ToolLending.AppServer
                 }
 
                 return member;
+            }
+        }
+
+        // Reads the member facts used by the service checkout evaluator for the supplied business
+        // date. Limits come from the existing PostgreSQL tier functions. Open and overdue loans
+        // come from the existing loans table. A missing member returns null. This method performs
+        // one parameterized SELECT and writes no workflow, audit, or idempotency data.
+        internal MemberEligibilityContext GetMemberEligibilityContext(
+            int memberId,
+            DateTime businessDate
+        )
+        {
+            const string sql =
+                @"
+                SELECT
+                    m.member_id,
+                    m.tier::text,
+                    m.active,
+                    count(l.loan_id)::int,
+                    coalesce(bool_or(l.due_on < @businessDate), false),
+                    tool_lending.tier_checkout_limit(m.tier),
+                    tool_lending.tier_max_loan_days(m.tier)
+                FROM tool_lending.members m
+                LEFT JOIN tool_lending.loans l
+                    ON l.member_id = m.member_id
+                    AND l.status = 'OPEN'
+                WHERE m.member_id = @memberId
+                GROUP BY m.member_id";
+
+            using (var connection = Open())
+            using (var command = new NpgsqlCommand(sql, connection))
+            {
+                command.Parameters.Add("memberId", NpgsqlDbType.Integer).Value = memberId;
+                command.Parameters.Add("businessDate", NpgsqlDbType.Date).Value = businessDate.Date;
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (!reader.Read())
+                        return null;
+
+                    return new MemberEligibilityContext(
+                        reader.GetInt32(0),
+                        reader.GetString(1),
+                        reader.GetBoolean(2),
+                        reader.GetInt32(3),
+                        reader.GetBoolean(4),
+                        reader.GetInt32(5),
+                        reader.GetInt32(6)
+                    );
+                }
             }
         }
 

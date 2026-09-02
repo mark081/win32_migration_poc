@@ -11,15 +11,18 @@ sources:
   - resource: repo://tests/NativeRulesTests/main.cpp#L12-L43
   - resource: repo://tests/AppServer.FeatureTests/Program.cs#L21-L252
   - resource: repo://tests/AppServer.FeatureTests/Program.cs#L267-L392
+  - resource: repo://tests/AppServer.FeatureTests/Program.cs#L420-L758
+  - resource: repo://tests/AppServer.FeatureTests/Program.cs#L775-L866
+  - resource: repo://tests/Integration/ApiTests.ps1#L76-L108
   - resource: repo://docs/testing-evolution.md#L47-L256
   - resource: repo://README.md#L274-L359
   - resource: repo://AGENTS.md#L205-L215
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-31T16:27:53+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---
@@ -35,6 +38,8 @@ The supported build is Windows/x86 using NuGet restore and MSBuild for the legac
 - Native rule tests remain regression evidence until equivalent service-level tests demonstrate the same decision table ([testing-evolution.md:47](../../../docs/testing-evolution.md#L47), [testing-evolution.md:60](../../../docs/testing-evolution.md#L60)).
 - The native suite characterizes all supported and unknown tier limits/durations plus eligibility below, at, and above tier limits, overdue, inactive, and unsupported-tier outcomes, including equivalence between the legacy boolean and versioned structured reason export ([main.cpp:14](../../../tests/NativeRulesTests/main.cpp#L14)).
 - The feature suite covers disabled/missing/malformed/expired/future/stale/source-error/timeout-like states, cache refresh/call counts, parent dominance, child fallback, and targeting ([Program.cs:21](../../../tests/AppServer.FeatureTests/Program.cs#L21)). It also verifies the telemetry JSON schema, hashing/redaction, bounded metric series, duration summaries, one-attempt failure isolation, and the in-memory sink ([Program.cs:267](../../../tests/AppServer.FeatureTests/Program.cs#L267)).
+- The same executable now checks the service checkout reason order, all supported tier/count and due-date boundaries, a fixed UTC business date, real PostgreSQL eligibility values, and full before/after fingerprints proving the repository read changes no workflow, idempotency, or audit data ([Program.cs:420](../../../tests/AppServer.FeatureTests/Program.cs#L420), [Program.cs:654](../../../tests/AppServer.FeatureTests/Program.cs#L654)).
+- Capability checks cover disabled, Legacy, compare, and service response mapping; freshness/correlation fields; parent and child telemetry; and missing, malformed, and overlong client-version fallback ([Program.cs:775](../../../tests/AppServer.FeatureTests/Program.cs#L775), [Program.cs:810](../../../tests/AppServer.FeatureTests/Program.cs#L810)). API integration verifies authentication, the disabled-by-default response, safe schema, targeting-data exclusion, correlation preservation, and version fallback ([ApiTests.ps1:76](../../../tests/Integration/ApiTests.ps1#L76)).
 - UI tests should protect wiring and visible behavior; domain permutations belong primarily in native, service, or API tests ([testing-evolution.md:115](../../../docs/testing-evolution.md#L115)).
 
 ## Change-sensitive scenarios

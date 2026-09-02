@@ -12,12 +12,13 @@ sources:
   - resource: repo://src/AppServer/ConnectedFeatures.cs#L341-L472
   - resource: repo://src/AppServer/ConnectedTelemetry.cs#L13-L385
   - resource: repo://src/AppServer/App.config#L6-L12
+  - resource: repo://src/AppServer/Capabilities.cs#L42-L166
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-08-31T16:27:53+00:00
+  at: 2026-09-02T16:37:01+00:00
 status: draft
-source_revision: a92466a48e26afbd15a296ad2fb00482d0227c12
-source_fingerprint: 4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe
+source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
+source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
 source_worktree: dirty
 curation_status: generated
 ---
@@ -41,6 +42,6 @@ A workflow child mode is `legacy`, `compare`, or `service` beneath the parent ga
 
 `EXTRACTED`: the application service now contains a provider-neutral, cached JSON snapshot evaluator with stable reason codes, parent dominance, child-mode validation, cohort narrowing, and bounded freshness/capability expiry ([ConnectedFeatures.cs:11](../../../src/AppServer/ConnectedFeatures.cs#L11), [ConnectedFeatures.cs:341](../../../src/AppServer/ConnectedFeatures.cs#L341)). Missing, malformed, stale, future-issued, inaccessible, and exception/timeout-like source failures resolve to a disabled parent and Legacy mode ([ConnectedFeatures.cs:367](../../../src/AppServer/ConnectedFeatures.cs#L367), [ConnectedFeatures.cs:454](../../../src/AppServer/ConnectedFeatures.cs#L454)).
 
-The configured snapshot path is empty by default, so this foundation activates no Connected runtime behavior ([App.config:6](../../../src/AppServer/App.config#L6)). It is not yet wired to a public capability API or any workflow router; those remain planned migration steps.
+The configured snapshot path is empty by default, so the public capability route reports a disabled parent and Legacy mode after deployment ([App.config:6](../../../src/AppServer/App.config#L6), [Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63)). The route accepts a bounded client version only as a narrowing input and forces Legacy for missing or unsafe versions. It is routing metadata, not authorization, and no workflow router consumes it yet.
 
-The service also contains an additive telemetry seam for future flag and comparison evidence. It hashes raw cohort and normalized-input identities before storage, emits only explicit JSON fields, bounds metric-series cardinality, and isolates sink exceptions without retrying telemetry calls ([ConnectedTelemetry.cs:21](../../../src/AppServer/ConnectedTelemetry.cs#L21), [ConnectedTelemetry.cs:165](../../../src/AppServer/ConnectedTelemetry.cs#L165), [ConnectedTelemetry.cs:257](../../../src/AppServer/ConnectedTelemetry.cs#L257), [ConnectedTelemetry.cs:339](../../../src/AppServer/ConnectedTelemetry.cs#L339)). This seam is not connected to feature evaluation or business operations yet, so it produces no runtime behavior at this wave.
+The capability route now uses the additive telemetry seam to emit separate `connected.enabled` and `connected.checkout.rule-mode` records with safe values, reason, configuration version, hashed server-owned practice context, and correlation ID ([Capabilities.cs:87](../../../src/AppServer/Capabilities.cs#L87), [Capabilities.cs:98](../../../src/AppServer/Capabilities.cs#L98)). Sink failure remains isolated, and telemetry is still not business audit or workflow state.

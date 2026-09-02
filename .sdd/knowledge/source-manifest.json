@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "source_revision": "a92466a48e26afbd15a296ad2fb00482d0227c12",
-  "source_fingerprint": "4ed98567a0c7e21fcdfc11ab848937099febed3f0c1aef7b474f63b4b6a62fbe",
+  "source_revision": "5fc24fa195f089ac9f1fbe59d50df9a15ef403e3",
+  "source_fingerprint": "93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925",
   "source_worktree": "dirty",
   "entries": [
     {
@@ -52,7 +52,7 @@
     {
       "path": "AGENTS.md",
       "kind": "file",
-      "sha256": "376406826c7279e359b39960c9ce0fe8e6a97e0532162b357125740cdf6b209f"
+      "sha256": "687f4db7f13abd600733803d07b5e0a434897d3acaeb138cba535013850b276c"
     },
     {
       "path": "PSScriptAnalyzerSettings.psd1",
@@ -71,7 +71,7 @@
     },
     {
       "path": "config/connected-features.disabled.example.json",
-      "kind": "untracked",
+      "kind": "file",
       "sha256": "aed8f08949866c379133a96afbc3b10f407503ed989f5ec35582628a36797703"
     },
     {
@@ -217,17 +217,27 @@
     {
       "path": "src/AppServer/AppServer.csproj",
       "kind": "file",
-      "sha256": "83139481f59146b57b0a09a04982b0bf3b13a16169fbc85f46de4f3cb4a2de53"
+      "sha256": "e4cc037517124caafaf03546b875982e41774b723313080b208d002873b268a9"
+    },
+    {
+      "path": "src/AppServer/Capabilities.cs",
+      "kind": "untracked",
+      "sha256": "f270e8bd9d86b12e274101a79681481a25b52028d14e92cb1ab97ea3e17eab5c"
+    },
+    {
+      "path": "src/AppServer/CheckoutRules.cs",
+      "kind": "untracked",
+      "sha256": "52389fc9d7b1a058df14301c8a95a7d3d53b1441b9eb6c3855233ace4b192a8c"
     },
     {
       "path": "src/AppServer/ConnectedFeatures.cs",
-      "kind": "untracked",
-      "sha256": "fee548da462b62071e86238484099304b586aa6758b074e03b1c255c007ab3c8"
+      "kind": "file",
+      "sha256": "5e1d565380e0fe67a48a1f1a3891724b8141bf05e1cf96137cbf4715815e26ac"
     },
     {
       "path": "src/AppServer/ConnectedTelemetry.cs",
-      "kind": "untracked",
-      "sha256": "1092b1d85379a2cbcade7d291bfb28522f36b9143db98e6ed287ccb5813ab82d"
+      "kind": "file",
+      "sha256": "5fd55d7fb1541ac2789766ec951f49153ba35903da98e2cd25bbbbf64e42d54f"
     },
     {
       "path": "src/AppServer/Controllers.cs",
@@ -246,13 +256,13 @@
     },
     {
       "path": "src/AppServer/Properties/AssemblyInfo.cs",
-      "kind": "untracked",
-      "sha256": "8056f0d25f783137ff2ee08d8a7f924ef75a8627565ee4e5d83f80b1dc1f6143"
+      "kind": "file",
+      "sha256": "e2ae5ed36a7941e7e1c1e731f13071e23a8e9e7a3c15cc3d5a04cf2c44aa82df"
     },
     {
       "path": "src/AppServer/Repository.cs",
       "kind": "file",
-      "sha256": "a7e4633792f7489c387f72335763ae8ad127bfd8e58d5cf16743483641b3040a"
+      "sha256": "121a76991a89b4246aa5ff84f18fe4ef74c0091a542a7ae8fbde92a3188b5217"
     },
     {
       "path": "src/AppServer/Startup.cs",
@@ -282,7 +292,7 @@
     {
       "path": "src/NativeRules/NativeRules.h",
       "kind": "file",
-      "sha256": "8f0639d5489386f359f77c40096f2cf106f035090bed4f119bf940a7091bc9e0"
+      "sha256": "524ec251c2c30634370c4f21b952ffff5c34f0381715327b6f3c37d01681bebc"
     },
     {
       "path": "src/NativeRules/NativeRules.vcxproj",
@@ -295,14 +305,19 @@
       "sha256": "2b7a6002a9b5e3ea7731c5df7abf10747247cf02f9e0ac597683ec659254eab9"
     },
     {
-      "path": "tests/AppServer.FeatureTests/AppServer.FeatureTests.csproj",
+      "path": "tests/AppServer.FeatureTests/App.config",
       "kind": "untracked",
-      "sha256": "d691120b3cef99c6c09d22a1f49872a1bb19bfcdd3e5c1fa15f98a5733ad7a78"
+      "sha256": "5984a09c3459c4120c0e0f5b4080916674332d48c4eb37e363cdc638d19b72ba"
+    },
+    {
+      "path": "tests/AppServer.FeatureTests/AppServer.FeatureTests.csproj",
+      "kind": "file",
+      "sha256": "552fd95eb1f8f97bf213d670b0809745dfbfacf1bf3509234596c29c93fb1eee"
     },
     {
       "path": "tests/AppServer.FeatureTests/Program.cs",
-      "kind": "untracked",
-      "sha256": "0f19a255cdacb1e7937567bc0dbd563b0c3f786b3b795ce0e798deafe142c12c"
+      "kind": "file",
+      "sha256": "c3ca974f6f8ba1f49854425c08db557038350d38f5c3aee33162cb0323466316"
     },
     {
       "path": "tests/DesktopClient.UiTests/DesktopClient.UiTests.csproj",
@@ -317,7 +332,7 @@
     {
       "path": "tests/Integration/ApiTests.ps1",
       "kind": "file",
-      "sha256": "18324f09c62be56d3babf02c983e081755518dfefdfaf02c1f98043a289507f7"
+      "sha256": "fc753180ea7a94c938e3a1b46e1b73ec892b340c7c01e24bcf26c616610f4d9f"
     },
     {
       "path": "tests/NativeRulesTests/NativeRulesTests.vcxproj",

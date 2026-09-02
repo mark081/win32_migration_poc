@@ -73,6 +73,34 @@ Assert ($member.outstandingLoans.Count -eq 1) 'member outstanding loans visible'
 Assert ($member.outstandingLoans[0].loanId -eq 1) 'member loan ID visible'
 Assert ($member.outstandingLoans[0].tool -eq 'Extension Ladder') 'member loan tool visible'
 
+# Authenticated additive capability contract; the default empty snapshot remains safely disabled.
+$capabilityHeaders = $headers.Clone()
+$capabilityHeaders['X-Client-Version'] = '1.0.0'
+$correlationId = [guid]::NewGuid()
+$capabilityHeaders['X-Correlation-ID'] = $correlationId.ToString()
+$capability = Invoke-RestMethod -Uri "$base/capabilities" -Headers $capabilityHeaders
+Assert ($capability.schemaVersion -eq 1) 'capability schema version'
+Assert ($capability.connectedEnabled -eq $false) 'default capability is disabled'
+Assert ($capability.checkoutRuleMode -eq 'legacy') 'default capability selects Legacy'
+Assert ($capability.correlationId -eq $correlationId) 'capability preserves valid correlation ID'
+Assert ($capability.expiresAt -ge $capability.evaluatedAt) 'capability freshness interval'
+Assert ($null -eq $capability.practiceKey) 'capability excludes targeting data'
+
+$missingVersionCapability = Invoke-RestMethod -Uri "$base/capabilities" -Headers $headers
+Assert ($missingVersionCapability.connectedEnabled -eq $false) `
+    'missing client version narrows capability'
+Assert ($missingVersionCapability.reason -eq 'CLIENT_VERSION_MISSING') `
+    'missing client version has a safe reason'
+
+$invalidVersionHeaders = $headers.Clone()
+$invalidVersionHeaders['X-Client-Version'] = ('9' * 65)
+$invalidVersionCapability = Invoke-RestMethod `
+    -Uri "$base/capabilities" -Headers $invalidVersionHeaders
+Assert ($invalidVersionCapability.connectedEnabled -eq $false) `
+    'overlong client version narrows capability'
+Assert ($invalidVersionCapability.reason -eq 'CLIENT_VERSION_INVALID') `
+    'invalid client version has a safe reason'
+
 # Invalid bodies and idempotency keys.
 Assert-ApiError { Post-Raw 'checkouts' 'null' } 400 $null 'null checkout body'
 Assert-ApiError { Post-Raw 'reservations' 'null' } 400 $null 'null reservation body'
@@ -248,5 +276,7 @@ Assert-ApiError `
 
 # Authentication boundary.
 Assert-ApiError { Invoke-RestMethod -Uri "$base/tools" } 401 $null 'unauthorized request'
+Assert-ApiError { Invoke-RestMethod -Uri "$base/capabilities" } 401 $null `
+    'unauthorized capability request'
 
 Write-Host 'API integration tests passed.'
