@@ -10,13 +10,14 @@ sources:
   - resource: repo://src/AppServer/Repository.cs#L304-L526
   - resource: repo://src/AppServer/Repository.cs#L272-L321
   - resource: repo://src/AppServer/CheckoutRules.cs#L91-L153
+  - resource: repo://src/AppServer/CheckoutDecisions.cs#L136-L291
   - resource: repo://AGENTS.md
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
@@ -31,6 +32,7 @@ The existing PostgreSQL database is the sole durable owner of tools, members, re
 - The service wraps retryable writes and durable deduplication in serializable transactions; the idempotency response is committed with the business operation ([Repository.cs:446](../../../src/AppServer/Repository.cs#L446), [Repository.cs:489](../../../src/AppServer/Repository.cs#L489), [Repository.cs:492](../../../src/AppServer/Repository.cs#L492)).
 - Tier limits and maximum durations are functions in PostgreSQL and duplicated in `NativeRules.dll` for client prechecks ([002_routines.sql:3](../../../database/002_routines.sql#L3), [NativeRules.cpp:9](../../../src/NativeRules/NativeRules.cpp#L9)).
 - The service can now read those PostgreSQL tier values with member open/overdue-loan facts and calculate a side-effect-free presentation decision ([Repository.cs:272](../../../src/AppServer/Repository.cs#L272), [CheckoutRules.cs:117](../../../src/AppServer/CheckoutRules.cs#L117)). This read performs no workflow, idempotency, or audit write and does not replace checkout transaction validation.
+- The checkout-decision API now calls that read/evaluator path for permitted compare/service modes. Tests fingerprint every workflow, idempotency, and audit table before and after a completed decision; ownership and stored-routine validation remain unchanged ([CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136)).
 
 ## Durable constraint
 

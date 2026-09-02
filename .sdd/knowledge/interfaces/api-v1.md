@@ -9,22 +9,23 @@ sources:
   - resource: repo://src/AppServer/Models.cs#L6-L112
   - resource: repo://src/AppServer/ApiKeyHandler.cs#L10-L24
   - resource: repo://src/AppServer/Capabilities.cs#L25-L166
-  - resource: repo://src/DesktopClient/main.cpp#L124-L165
+  - resource: repo://src/AppServer/CheckoutDecisions.cs#L44-L390
+  - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
   - resource: repo://tests/Integration/ApiTests.ps1#L70-L239
   - resource: repo://AGENTS.md#L81-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
 
 # Summary
 
-The service exposes versioned `/api/v1` routes for tools, members, reservations, checkouts, returns, audit, health, and additive Connected routing capabilities ([Controllers.cs:121](../../../src/AppServer/Controllers.cs#L121), [Capabilities.cs:126](../../../src/AppServer/Capabilities.cs#L126)). DTO data annotations validate shape and basic ranges at the service boundary ([Models.cs:6](../../../src/AppServer/Models.cs#L6)).
+The service exposes versioned `/api/v1` routes for tools, members, reservations, checkouts, returns, audit, health, Connected routing capabilities, and read-only checkout decisions ([Controllers.cs:121](../../../src/AppServer/Controllers.cs#L121), [Capabilities.cs:126](../../../src/AppServer/Capabilities.cs#L126), [CheckoutDecisions.cs:322](../../../src/AppServer/CheckoutDecisions.cs#L322)). DTO data annotations validate shape and basic ranges at the service boundary ([Models.cs:6](../../../src/AppServer/Models.cs#L6)).
 
 ## Contract behavior
 
@@ -33,10 +34,17 @@ The service exposes versioned `/api/v1` routes for tools, members, reservations,
 - Integration tests characterize DTO validation, generated identities, replay, reservation and checkout failures, returns, audit, and competing checkout behavior ([ApiTests.ps1:77](../../../tests/Integration/ApiTests.ps1#L77), [ApiTests.ps1:95](../../../tests/Integration/ApiTests.ps1#L95), [ApiTests.ps1:167](../../../tests/Integration/ApiTests.ps1#L167), [ApiTests.ps1:216](../../../tests/Integration/ApiTests.ps1#L216)).
 - `GET /api/v1/capabilities` is protected by the same API-key handler and returns schema/configuration versions, evaluation/expiry times, effective parent and child routing values, a safe reason, and a correlation ID. Missing, malformed, or overlong `X-Client-Version` values force a disabled/Legacy response; request headers cannot elevate the evaluator's service-owned result ([Capabilities.cs:42](../../../src/AppServer/Capabilities.cs#L42), [Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63), [Capabilities.cs:126](../../../src/AppServer/Capabilities.cs#L126)).
 - Capability responses exclude practice keys, raw targeting values, provider data, credentials, and business authorization. A valid UUID `X-Correlation-ID` is preserved; other values are replaced before diagnostics ([Capabilities.cs:25](../../../src/AppServer/Capabilities.cs#L25), [Capabilities.cs:159](../../../src/AppServer/Capabilities.cs#L159)).
+- `POST /api/v1/checkout-decisions` requires no idempotency key because it performs no write. It re-evaluates service-owned capability state, returns versioned allow/deny facts for compare or service mode, reports stale routing as `409 CAPABILITY_STALE`, unavailable PostgreSQL reads as `503 DECISION_UNAVAILABLE`, and unexpected failures without raw exception details ([CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136), [CheckoutDecisions.cs:322](../../../src/AppServer/CheckoutDecisions.cs#L322)).
 
-## Current network limitation
+## Current network boundary
 
-The client hard-codes `localhost:8088`, requests plain HTTP, and sets no explicit WinHTTP timeouts ([main.cpp:127](../../../src/DesktopClient/main.cpp#L127)). This does not yet satisfy the Connected remote/TLS/failure-handling gate.
+The client defaults its Legacy endpoint to `http://localhost:8088/` but accepts an external Legacy
+URL. An optional Connected endpoint must be HTTPS and have its own readable, non-empty credential
+file. WinHTTP uses explicit bounded timeouts and its normal certificate/hostname checks; failures
+have stable categories and a keyed ambiguous write is replayed at most once with the same key
+([ClientTransport.cpp:279](../../../src/DesktopClient/ClientTransport.cpp#L279),
+[ClientTransport.cpp:323](../../../src/DesktopClient/ClientTransport.cpp#L323)). No product call
+selects the Connected endpoint until the next capability-router task is implemented.
 
 ## Migration compatibility constraint
 

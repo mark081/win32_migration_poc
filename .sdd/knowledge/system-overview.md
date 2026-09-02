@@ -6,16 +6,17 @@ resource: repo://.
 tags: [win32, service, postgresql, connected]
 sources:
   - resource: repo://README.md#L16-L59
-  - resource: repo://src/DesktopClient/main.cpp#L124-L165
+  - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
   - resource: repo://src/AppServer/Program.cs#L14-L37
   - resource: repo://src/AppServer/Capabilities.cs#L126-L166
+  - resource: repo://src/AppServer/CheckoutDecisions.cs#L322-L390
   - resource: repo://docs/architecture.md#L1-L26
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
@@ -26,15 +27,15 @@ The application is a Windows/x86 client-server system. A native Win32 client cal
 
 ## Entry points
 
-- The interactive client starts in `wWinMain`, loads a practice-shared credential, creates the Win32 UI, and uses WinHTTP for API calls ([main.cpp:93](../../src/DesktopClient/main.cpp#L93), [main.cpp:124](../../src/DesktopClient/main.cpp#L124)).
+- The interactive client starts in `wWinMain`, validates endpoint configuration, loads the Legacy credential, creates the Win32 UI, and uses the bounded WinHTTP transport for API calls. Product routing remains Legacy until capability caching is implemented ([main.cpp:126](../../src/DesktopClient/main.cpp#L126), [ClientTransport.cpp:279](../../src/DesktopClient/ClientTransport.cpp#L279)).
 - The application service runs either in console mode or as a Windows service and binds the configured OWIN base address ([Program.cs:14](../../src/AppServer/Program.cs#L14), [Program.cs:37](../../src/AppServer/Program.cs#L37)).
 - Database behavior is installed through versioned SQL scripts under `database/`; build and test orchestration lives under `scripts/` ([README.md:384](../../README.md#L384)).
 
 ## Boundaries and dependencies
 
 - The client has an in-process link to `NativeRules.dll` and a network dependency on `/api/v1` ([DesktopClient.vcxproj:43](../../src/DesktopClient/DesktopClient.vcxproj#L43), [main.cpp:131](../../src/DesktopClient/main.cpp#L131)).
-- The service owns Npgsql access, API authentication, DTO validation, idempotency coordination, database error translation, and the additive service-authored capability response used by later Connected routing ([README.md:122](../../README.md#L122), [Capabilities.cs:126](../../src/AppServer/Capabilities.cs#L126)).
-- The current endpoint is hard-coded to unencrypted localhost HTTP in the client, while the service base address and key are configuration values ([main.cpp:131](../../src/DesktopClient/main.cpp#L131), [App.config:4](../../src/AppServer/App.config#L4)).
+- The service owns Npgsql access, API authentication, DTO validation, idempotency coordination, database error translation, the additive capability response, and a read-only checkout-decision endpoint ([Capabilities.cs:126](../../src/AppServer/Capabilities.cs#L126), [CheckoutDecisions.cs:322](../../src/AppServer/CheckoutDecisions.cs#L322)).
+- The Legacy endpoint defaults to unencrypted localhost HTTP for compatibility. An optional Connected endpoint is externally configured, requires HTTPS and its own credential file, and is not yet selected by product routing ([ClientTransport.cpp:279](../../src/DesktopClient/ClientTransport.cpp#L279)).
 
 ## Graph evidence
 

@@ -59,6 +59,26 @@ namespace ToolLending.AppServer.FeatureTests
                 "capability API rejects unsafe client versions",
                 CapabilityApiRejectsUnsafeVersions
             );
+            Run("checkout decision uses service result in service mode", DecisionUsesServiceResult);
+            Run(
+                "checkout decision preserves Legacy result in compare mode",
+                DecisionPreservesLegacyResult
+            );
+            Run("checkout decision records compare match", DecisionRecordsCompareMatch);
+            Run("checkout decision rejects stale capability", DecisionRejectsStaleCapability);
+            Run(
+                "checkout decision requires compare observation",
+                DecisionRequiresCompareObservation
+            );
+            Run(
+                "checkout decision records compare read failure",
+                DecisionRecordsCompareReadFailure
+            );
+            Run(
+                "checkout decision repository read is side effect free",
+                DecisionRepositoryReadIsSideEffectFree
+            );
+            Run("checkout decision isolates telemetry failure", DecisionIsolatesTelemetryFailure);
             Console.WriteLine(
                 failures == 0
                     ? "All feature evaluator tests passed."
@@ -832,6 +852,184 @@ namespace ToolLending.AppServer.FeatureTests
                 Equal("legacy", invalid.CheckoutRuleMode);
                 Equal(CapabilityApiReasons.ClientVersionInvalid, invalid.Reason);
             }
+        }
+
+        // Proves Service mode returns the service rule result and records no comparison.
+        private static void DecisionUsesServiceResult()
+        {
+            var telemetry = new InMemoryConnectedTelemetrySink();
+            var service = DecisionService(CheckoutRuleMode.Service, telemetry);
+            var response = service.Decide(DecisionRequest(), Guid.NewGuid());
+
+            Equal("service", response.EffectiveMode);
+            Equal(true, response.Allowed);
+            Equal(CheckoutDecisionReasons.Allowed, response.Reason);
+            Equal(0, telemetry.RuleComparisons.Count);
+            Equal(2, telemetry.FlagEvaluations.Count);
+        }
+
+        // Proves Compare mode reports the Legacy result while recording the service mismatch.
+        private static void DecisionPreservesLegacyResult()
+        {
+            var telemetry = new InMemoryConnectedTelemetrySink();
+            var service = DecisionService(CheckoutRuleMode.Compare, telemetry);
+            var request = DecisionRequest();
+            request.LegacyObservation = new LegacyCheckoutObservation
+            {
+                ContractVersion = 1,
+                Allowed = false,
+                Reason = "OVERDUE",
+            };
+            var response = service.Decide(request, Guid.NewGuid());
+
+            Equal("compare", response.EffectiveMode);
+            Equal(false, response.Allowed);
+            Equal("OVERDUE", response.Reason);
+            Equal(1, telemetry.RuleComparisons.Count);
+            Equal(false, telemetry.RuleComparisons[0].Match);
+            Equal("completed", telemetry.RuleComparisons[0].Outcome);
+        }
+
+        // Proves equal Legacy and service outcomes are recorded as a normalized match.
+        private static void DecisionRecordsCompareMatch()
+        {
+            var telemetry = new InMemoryConnectedTelemetrySink();
+            var service = DecisionService(CheckoutRuleMode.Compare, telemetry);
+            var request = DecisionRequest();
+            request.LegacyObservation = new LegacyCheckoutObservation
+            {
+                ContractVersion = 1,
+                Allowed = true,
+                Reason = "ALLOWED",
+            };
+
+            service.Decide(request, Guid.NewGuid());
+
+            Equal(true, telemetry.RuleComparisons[0].Match);
+        }
+
+        // Proves changed server configuration cannot be overridden by client routing evidence.
+        private static void DecisionRejectsStaleCapability()
+        {
+            var service = DecisionService(
+                CheckoutRuleMode.Service,
+                new InMemoryConnectedTelemetrySink()
+            );
+            var request = DecisionRequest();
+            request.CapabilityConfigurationVersion = "stale-client-version";
+
+            try
+            {
+                service.Decide(request, Guid.NewGuid());
+                throw new InvalidOperationException("expected stale capability rejection");
+            }
+            catch (CapabilityStaleException) { }
+        }
+
+        // Proves Compare mode cannot silently produce comparison evidence without NativeRules data.
+        private static void DecisionRequiresCompareObservation()
+        {
+            var service = DecisionService(
+                CheckoutRuleMode.Compare,
+                new InMemoryConnectedTelemetrySink()
+            );
+            try
+            {
+                service.Decide(DecisionRequest(), Guid.NewGuid());
+                throw new InvalidOperationException("expected missing observation rejection");
+            }
+            catch (ArgumentException) { }
+        }
+
+        // Proves a failed compare read emits safe incomplete evidence and does not change outcome.
+        private static void DecisionRecordsCompareReadFailure()
+        {
+            var telemetry = new InMemoryConnectedTelemetrySink();
+            var request = DecisionRequest();
+            request.LegacyObservation = new LegacyCheckoutObservation
+            {
+                ContractVersion = 1,
+                Allowed = true,
+                Reason = "ALLOWED",
+            };
+            var service = new CheckoutDecisionService(
+                new FixedEvaluator(Capability(true, CheckoutRuleMode.Compare, "COMPARE")),
+                (memberId, businessDate) => throw new NpgsqlException("synthetic read failure"),
+                new CheckoutRuleEvaluator(),
+                new FixedBusinessDateClock(new DateTime(2026, 9, 2)),
+                telemetry
+            );
+
+            try
+            {
+                service.Decide(request, Guid.NewGuid());
+                throw new InvalidOperationException("expected read failure");
+            }
+            catch (NpgsqlException) { }
+
+            Equal(1, telemetry.RuleComparisons.Count);
+            Equal("service_error", telemetry.RuleComparisons[0].Outcome);
+        }
+
+        // Proves a completed service decision leaves workflow, retry, and audit tables unchanged.
+        private static void DecisionRepositoryReadIsSideEffectFree()
+        {
+            var connectionString = TestConnectionString();
+            var businessDate = ReadDatabaseBusinessDate(connectionString);
+            var before = CaptureDatabaseState(connectionString);
+            var service = new CheckoutDecisionService(
+                new FixedEvaluator(Capability(true, CheckoutRuleMode.Service, "SERVICE")),
+                new Repository(connectionString),
+                new CheckoutRuleEvaluator(),
+                new FixedBusinessDateClock(businessDate),
+                new InMemoryConnectedTelemetrySink()
+            );
+            var request = DecisionRequest();
+            request.MemberId = 1;
+            request.DueOn = businessDate.AddDays(1);
+
+            service.Decide(request, Guid.NewGuid());
+
+            Equal(before, CaptureDatabaseState(connectionString));
+        }
+
+        // Proves the production failure-isolating wrapper preserves a completed decision.
+        private static void DecisionIsolatesTelemetryFailure()
+        {
+            var throwing = new ThrowingTelemetrySink();
+            var safe = new SafeConnectedTelemetrySink(throwing);
+            var response = DecisionService(CheckoutRuleMode.Service, safe)
+                .Decide(DecisionRequest(), Guid.NewGuid());
+
+            Equal(true, response.Allowed);
+            Equal(true, safe.FailureCount > 0);
+        }
+
+        // Builds one valid synthetic request matching the fixed capability configuration.
+        private static CheckoutDecisionRequest DecisionRequest()
+        {
+            return new CheckoutDecisionRequest
+            {
+                MemberId = 42,
+                DueOn = new DateTime(2026, 9, 5),
+                ClientVersion = "1.2.3",
+                CapabilityConfigurationVersion = "test-configuration-1",
+            };
+        }
+
+        // Builds a decision service with an in-memory member read and deterministic business date.
+        private static CheckoutDecisionService DecisionService(
+            CheckoutRuleMode mode,
+            IConnectedTelemetrySink telemetry
+        )
+        {
+            return new CheckoutDecisionService(
+                new FixedEvaluator(Capability(true, mode, mode.ToString().ToUpperInvariant())),
+                (memberId, businessDate) => Member("STANDARD", true, false, 0, 2, 7),
+                new CheckoutRuleEvaluator(),
+                new FixedBusinessDateClock(new DateTime(2026, 9, 2)),
+                telemetry
+            );
         }
 
         // Creates one deterministic server decision for capability contract mapping tests.

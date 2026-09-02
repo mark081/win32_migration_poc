@@ -5,7 +5,8 @@ Win32 x86 client
   |-- Lending, Add user, and Add tool tabs
   |-- UI validation and confirmation
   |-- NativeRules.dll (eligibility and tier limits)
-  |-- practice-shared API credential read from local/SMB file
+  |-- practice-shared Legacy credential read from local/SMB file
+  |-- externally configured Legacy endpoint and optional HTTPS Connected endpoint
   |
   +---- HTTP/JSON + X-Api-Key ----> .NET Framework 4.8 Windows service
                                       |-- authorization
@@ -52,3 +53,17 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 ## Failure behavior
 
 Database exceptions use stable `TLxxx` SQLSTATE codes. The API maps expected business failures to HTTP 409, validation failures to 400, authentication failures to 401, and unexpected failures to 500 with a correlation ID. A failed transaction writes no partial business state. Service restarts are safe because idempotency records live in PostgreSQL.
+
+The additive checkout-decision route is read-only. It evaluates current server-owned feature state,
+loads current member facts, and returns an advisory allow or deny result. Compare mode records the
+normalized NativeRules and service results, while service mode returns only the service result.
+Neither mode writes a loan, idempotency record, or business audit entry. A stale capability returns
+`409 CAPABILITY_STALE`; a database read failure returns `503 DECISION_UNAVAILABLE`.
+
+The WinHTTP transport accepts an external Legacy URL and an optional Connected URL. Connected URLs
+must use HTTPS and supply their own credential file; they cannot inherit the compiled local-demo
+credential. Windows performs its normal certificate-chain and hostname validation. Resolve,
+connect, send, and receive timeouts are explicitly bounded. Transport failures are classified as
+configuration, timeout, unavailable, authentication, authorization, validation, conflict, or
+unexpected. Current product calls remain on the Legacy endpoint until the capability router is
+implemented in the next task.

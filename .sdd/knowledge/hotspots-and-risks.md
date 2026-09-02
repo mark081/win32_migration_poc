@@ -10,15 +10,17 @@ sources:
   - resource: repo://src/AppServer/Repository.cs#L272-L321
   - resource: repo://src/AppServer/CheckoutRules.cs#L91-L153
   - resource: repo://src/AppServer/Capabilities.cs#L42-L166
+  - resource: repo://src/AppServer/CheckoutDecisions.cs#L90-L390
+  - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
   - resource: repo://database/002_routines.sql#L23-L42
   - resource: repo://docs/testing-evolution.md#L47-L61
   - resource: repo://AGENTS.md#L42-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
@@ -27,10 +29,10 @@ curation_status: generated
 
 1. **Checkout client gate:** `Checkout()` fetches member state and prevents the POST when `NativeRules` says the member is ineligible ([main.cpp:349](../../src/DesktopClient/main.cpp#L349)). Removing this changes timing and presentation of rejection even if the authoritative outcome is unchanged.
 2. **Duplicated decision table:** tier limits and eligibility exist in both C++ and SQL ([NativeRules.cpp:9](../../src/NativeRules/NativeRules.cpp#L9), [002_routines.sql:3](../../database/002_routines.sql#L3)). The database already supplies limits in `MemberDto`, which can accidentally preserve policy leakage into the client ([Repository.cs:174](../../src/AppServer/Repository.cs#L174)).
-3. **Transport coupling:** hard-coded localhost HTTP and absent explicit timeouts mean removing local prechecks increases dependence on a network path that is not yet Connected-ready ([main.cpp:124](../../src/DesktopClient/main.cpp#L124)).
+3. **Transport coupling:** endpoint parsing, HTTPS enforcement, separate Connected credentials, bounded timeouts, failure categories, and same-key bounded replay now exist, but all product calls intentionally remain on Legacy until capability routing is implemented ([ClientTransport.cpp:279](../../src/DesktopClient/ClientTransport.cpp#L279), [main.cpp:126](../../src/DesktopClient/main.cpp#L126)).
 4. **Test coupling:** `NativeRulesTests` protects decision-table parity; removal requires replacement service-level characterization before retirement ([testing-evolution.md:60](../../docs/testing-evolution.md#L60)).
 5. **Scope ambiguity:** “all business logic” could mistakenly include required-field checks, confirmation, formatting, and local failure presentation, despite policy assigning immediate operator validation to the client.
-6. **Partially integrated service foundations:** the authenticated capability route now exposes the cached service-owned routing decision and telemetry, but no client router or checkout-decision route consumes it. The service rule evaluator remains unwired from product workflow, and the empty default snapshot keeps routing Legacy ([Capabilities.cs:63](../../src/AppServer/Capabilities.cs#L63), [Repository.cs:272](../../src/AppServer/Repository.cs#L272), [CheckoutRules.cs:117](../../src/AppServer/CheckoutRules.cs#L117)).
+6. **Partially integrated migration path:** authenticated capability and checkout-decision routes now exist, but no client capability cache/router consumes them. The default empty snapshot keeps routing Legacy, and the desktop continues to use NativeRules plus the Legacy endpoint ([Capabilities.cs:63](../../src/AppServer/Capabilities.cs#L63), [CheckoutDecisions.cs:322](../../src/AppServer/CheckoutDecisions.cs#L322), [main.cpp:126](../../src/DesktopClient/main.cpp#L126)).
 
 # Risks
 

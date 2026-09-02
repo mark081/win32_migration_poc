@@ -261,12 +261,38 @@ The service listens on `http://localhost:8088/` by default. Every endpoint requi
 | `POST` | `/api/v1/members` | Create a member with a database-generated ID |
 | `POST` | `/api/v1/reservations` | Reserve a tool |
 | `POST` | `/api/v1/checkouts` | Check out a tool |
+| `GET` | `/api/v1/capabilities` | Read short-lived, service-owned Connected routing metadata |
+| `POST` | `/api/v1/checkout-decisions` | Evaluate checkout eligibility without writing workflow data |
 | `POST` | `/api/v1/returns` | Return a loan and calculate late fee |
 | `GET` | `/api/v1/audit?take=100` | Read recent audit records |
 
 Write endpoints also require a UUID in `Idempotency-Key`. Reusing the same key with the same payload replays the original result; reusing it with a different payload returns a conflict.
 
 Expected database failures use stable `TLxxx` SQLSTATE codes. The API maps authentication failures to `401`, validation failures to `400`, missing records to `404`, business conflicts to `409`, and unexpected failures to `500` with a correlation/request ID.
+
+The decision endpoint re-evaluates `connected.enabled` and the checkout child mode on every call.
+It returns `409 CAPABILITY_STALE` when the supplied configuration version is stale or the current
+server decision is Legacy. Completed decisions never write workflow, idempotency, or business-audit
+records; PostgreSQL still makes the final decision when `/api/v1/checkouts` is called.
+
+The desktop now parses its Legacy endpoint and optional Connected endpoint from external settings.
+All product calls still use Legacy until the later capability router is implemented. Supported
+process environment variables are:
+
+| Variable | Default or rule |
+|---|---|
+| `TOOL_LENDING_LEGACY_BASE_URL` | `http://localhost:8088/` |
+| `TOOL_LENDING_CONNECTED_BASE_URL` | Optional; must be an absolute `https://` URL |
+| `TOOL_LENDING_CONNECTED_CREDENTIAL_FILE` | Required, readable, and non-empty when a Connected URL is configured |
+| `TOOL_LENDING_RESOLVE_TIMEOUT_MS` | Default `5000`; range 100–60000 |
+| `TOOL_LENDING_CONNECT_TIMEOUT_MS` | Default `5000`; range 100–60000 |
+| `TOOL_LENDING_SEND_TIMEOUT_MS` | Default `10000`; range 100–120000 |
+| `TOOL_LENDING_RECEIVE_TIMEOUT_MS` | Default `15000`; range 100–120000 |
+
+WinHTTP retains Windows certificate-chain and hostname validation. The code provides no certificate
+bypass. A keyed write may be replayed once after a timeout or unavailable result and always reuses
+the exact same idempotency key. Missing or invalid Connected configuration fails closed at startup
+and never falls back to the local demo credential.
 
 ## Build and run
 

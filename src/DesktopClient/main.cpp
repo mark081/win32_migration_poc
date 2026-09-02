@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <vector>
 #include "../NativeRules/NativeRules.h"
+#include "ClientTransport.h"
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "comctl32.lib")
 
@@ -61,6 +62,7 @@ static HWND assetTagBox, toolNameBox, lateFeeBox, toolResultBox;
 static std::vector<HWND> lendingControls, userControls, addToolControls;
 static std::wstring apiKey = L"demo-local-key";
 static std::wstring credentialMode = L"Legacy shared credential: built-in demo fallback";
+static ClientEndpointConfiguration endpointConfiguration;
 static std::string Utf8(const std::wstring &s)
 {
     if (s.empty())
@@ -121,48 +123,13 @@ static bool LoadLegacyCredential(std::wstring &error)
     credentialMode = L"Legacy shared credential file: " + path;
     return true;
 }
+// Sends current product calls to the configured Legacy endpoint. Connected endpoint selection is
+// added only after a current service capability is cached; keyed ambiguous writes reuse their key.
 static std::wstring Http(const wchar_t *verb, const std::wstring &path,
                          const std::string &body = "", const std::wstring &key = L"")
 {
-    HINTERNET session = WinHttpOpen(L"ToolLendingLegacyClient/1.0", WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                    nullptr, nullptr, 0);
-    if (!session)
-        return L"ERROR: WinHttpOpen";
-    HINTERNET connect = WinHttpConnect(session, L"localhost", 8088, 0);
-    HINTERNET request = WinHttpOpenRequest(connect, verb, path.c_str(), nullptr, WINHTTP_NO_REFERER,
-                                           WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-    std::wstring headers =
-        L"X-Api-Key: " + apiKey + L"\r\nX-Actor: legacy.desktop\r\n";
-    if (!key.empty())
-        headers += L"Idempotency-Key: " + key + L"\r\n";
-    if (!body.empty())
-        headers += L"Content-Type: application/json\r\n";
-    BOOL ok = WinHttpSendRequest(request, headers.c_str(), (DWORD)-1L,
-                                 body.empty() ? WINHTTP_NO_REQUEST_DATA : (LPVOID)body.data(),
-                                 (DWORD)body.size(), (DWORD)body.size(), 0) &&
-              WinHttpReceiveResponse(request, nullptr);
-    std::string all;
-    if (ok)
-    {
-        DWORD size = 0;
-        do
-        {
-            WinHttpQueryDataAvailable(request, &size);
-            if (!size)
-                break;
-            std::string part(size, 0);
-            DWORD got = 0;
-            WinHttpReadData(request, &part[0], size, &got);
-            part.resize(got);
-            all += part;
-        } while (size);
-    }
-    else
-        all = "ERROR: API unavailable (" + std::to_string(GetLastError()) + ")";
-    WinHttpCloseHandle(request);
-    WinHttpCloseHandle(connect);
-    WinHttpCloseHandle(session);
-    return Wide(all);
+    return FormatClientHttpResult(SendClientHttp(
+        endpointConfiguration, endpointConfiguration.legacy, verb, path, apiKey, body, key));
 }
 static std::wstring Text(HWND h)
 {
@@ -294,12 +261,11 @@ static void SetOutput(const std::wstring &s)
 {
     SetWindowText(outputBox, PrettyJson(s).c_str());
 }
-static HWND ScreenControl(std::vector<HWND> &screen, const wchar_t *className,
-                          const wchar_t *text, DWORD style, int x, int y, int width, int height,
-                          HWND parent, int id)
+static HWND ScreenControl(std::vector<HWND> &screen, const wchar_t *className, const wchar_t *text,
+                          DWORD style, int x, int y, int width, int height, HWND parent, int id)
 {
-    auto control = CreateWindow(className, text, style, x, y, width, height, parent, (HMENU)id, 0,
-                                0);
+    auto control =
+        CreateWindow(className, text, style, x, y, width, height, parent, (HMENU)id, 0, 0);
     screen.push_back(control);
     return control;
 }
@@ -323,8 +289,8 @@ static void AddUser()
     wchar_t tier[32] = {};
     SendMessage(userTierBox, CB_GETLBTEXT, selectedTier, (LPARAM)tier);
     bool active = SendMessage(userActiveBox, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    std::string body = "{\"displayName\":\"" + JsonEscape(name) + "\",\"tier\":\"" +
-                       Utf8(tier) + "\",\"active\":" + (active ? "true" : "false") + "}";
+    std::string body = "{\"displayName\":\"" + JsonEscape(name) + "\",\"tier\":\"" + Utf8(tier) +
+                       "\",\"active\":" + (active ? "true" : "false") + "}";
     SetWindowText(userResultBox,
                   PrettyJson(Http(L"POST", L"/api/v1/members", body, NewGuid())).c_str());
 }
@@ -340,9 +306,8 @@ static void AddTool()
         return;
     }
 
-    std::string body = "{\"assetTag\":\"" + JsonEscape(assetTag) +
-                       "\",\"displayName\":\"" + JsonEscape(name) +
-                       "\",\"dailyLateFee\":" + Utf8(fee) + "}";
+    std::string body = "{\"assetTag\":\"" + JsonEscape(assetTag) + "\",\"displayName\":\"" +
+                       JsonEscape(name) + "\",\"dailyLateFee\":" + Utf8(fee) + "}";
     SetWindowText(toolResultBox,
                   PrettyJson(Http(L"POST", L"/api/v1/tools", body, NewGuid())).c_str());
 }
@@ -406,33 +371,33 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         // screen coordinates, which makes validation stable across DPI and layout changes.
         ScreenControl(lendingControls, L"STATIC", L"Member ID", WS_CHILD | WS_VISIBLE, 22, 48, 80,
                       20, h, ID_MEMBER_LABEL);
-        memberBox = ScreenControl(lendingControls, L"EDIT", L"1",
-                                  WS_CHILD | WS_VISIBLE | WS_BORDER, 107, 45, 70, 24, h, ID_MEMBER);
+        memberBox = ScreenControl(lendingControls, L"EDIT", L"1", WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                  107, 45, 70, 24, h, ID_MEMBER);
         ScreenControl(lendingControls, L"BUTTON", L"Load Member", WS_CHILD | WS_VISIBLE, 187, 44,
                       100, 26, h, ID_LOAD_MEMBER);
-        ScreenControl(lendingControls, L"STATIC", L"Tool ID", WS_CHILD | WS_VISIBLE, 22, 85, 80,
-                      20, h, ID_TOOL_LABEL);
-        toolBox = ScreenControl(lendingControls, L"EDIT", L"1",
-                                WS_CHILD | WS_VISIBLE | WS_BORDER, 107, 82, 70, 24, h, ID_TOOL);
+        ScreenControl(lendingControls, L"STATIC", L"Tool ID", WS_CHILD | WS_VISIBLE, 22, 85, 80, 20,
+                      h, ID_TOOL_LABEL);
+        toolBox = ScreenControl(lendingControls, L"EDIT", L"1", WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                107, 82, 70, 24, h, ID_TOOL);
         ScreenControl(lendingControls, L"STATIC", L"Due (YYYY-MM-DD)", WS_CHILD | WS_VISIBLE, 307,
                       48, 130, 20, h, ID_DUE_LABEL);
         dueBox = ScreenControl(lendingControls, L"EDIT", L"2026-08-29",
                                WS_CHILD | WS_VISIBLE | WS_BORDER, 442, 45, 110, 24, h, ID_DUE);
-        ScreenControl(lendingControls, L"BUTTON", L"Check Out", WS_CHILD | WS_VISIBLE, 307, 81,
-                      110, 28, h, ID_CHECKOUT);
+        ScreenControl(lendingControls, L"BUTTON", L"Check Out", WS_CHILD | WS_VISIBLE, 307, 81, 110,
+                      28, h, ID_CHECKOUT);
         ScreenControl(lendingControls, L"BUTTON", L"Refresh Tools", WS_CHILD | WS_VISIBLE, 432, 81,
                       120, 28, h, ID_REFRESH);
         ScreenControl(lendingControls, L"STATIC", L"Loan ID", WS_CHILD | WS_VISIBLE, 577, 48, 65,
                       20, h, ID_LOAN_LABEL);
-        loanBox = ScreenControl(lendingControls, L"EDIT", L"",
-                                WS_CHILD | WS_VISIBLE | WS_BORDER, 642, 45, 70, 24, h, ID_LOAN);
+        loanBox = ScreenControl(lendingControls, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                642, 45, 70, 24, h, ID_LOAN);
         ScreenControl(lendingControls, L"BUTTON", L"Return Tool", WS_CHILD | WS_VISIBLE, 577, 81,
                       135, 28, h, ID_RETURN);
-        outputBox = ScreenControl(lendingControls, L"EDIT", L"Click Refresh Tools to begin.",
-                                  WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE |
-                                      ES_AUTOVSCROLL | WS_VSCROLL | WS_HSCROLL | ES_AUTOHSCROLL |
-                                      ES_READONLY,
-                                  22, 123, 740, 330, h, ID_OUTPUT);
+        outputBox =
+            ScreenControl(lendingControls, L"EDIT", L"Click Refresh Tools to begin.",
+                          WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL |
+                              WS_VSCROLL | WS_HSCROLL | ES_AUTOHSCROLL | ES_READONLY,
+                          22, 123, 740, 330, h, ID_OUTPUT);
         SendMessage(outputBox, WM_SETFONT, (WPARAM)GetStockObject(ANSI_FIXED_FONT), TRUE);
         // This label makes the deliberately weak Legacy trust model visible and testable. It shows
         // where the practice-shared credential came from, but never renders the credential value.
@@ -449,13 +414,14 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         ScreenControl(userControls, L"STATIC", L"Display name", WS_CHILD | WS_VISIBLE, 35, 140, 110,
                       20, h, ID_USER_NAME_LABEL);
         userNameBox = ScreenControl(userControls, L"EDIT", L"",
-                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 137, 300,
-                                    24, h, ID_USER_NAME);
+                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 137,
+                                    300, 24, h, ID_USER_NAME);
         ScreenControl(userControls, L"STATIC", L"Membership tier", WS_CHILD | WS_VISIBLE, 35, 180,
                       120, 20, h, ID_USER_TIER_LABEL);
-        userTierBox = ScreenControl(userControls, WC_COMBOBOX, L"",
-                                    WS_CHILD | WS_VISIBLE | WS_BORDER | CBS_DROPDOWNLIST | WS_VSCROLL,
-                                    165, 177, 180, 140, h, ID_USER_TIER);
+        userTierBox =
+            ScreenControl(userControls, WC_COMBOBOX, L"",
+                          WS_CHILD | WS_VISIBLE | WS_BORDER | CBS_DROPDOWNLIST | WS_VSCROLL, 165,
+                          177, 180, 140, h, ID_USER_TIER);
         SendMessage(userTierBox, CB_ADDSTRING, 0, (LPARAM)L"STANDARD");
         SendMessage(userTierBox, CB_ADDSTRING, 0, (LPARAM)L"SUPPORTER");
         SendMessage(userTierBox, CB_ADDSTRING, 0, (LPARAM)L"STAFF");
@@ -464,11 +430,12 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
                                       WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 165, 220, 180, 24, h,
                                       ID_USER_ACTIVE);
         SendMessage(userActiveBox, BM_SETCHECK, BST_CHECKED, 0);
-        ScreenControl(userControls, L"BUTTON", L"Add user", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                      165, 265, 120, 30, h, ID_ADD_USER);
-        userResultBox = ScreenControl(userControls, L"EDIT", L"The generated member ID will appear here.",
-                                      WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_READONLY,
-                                      35, 325, 700, 120, h, ID_USER_RESULT);
+        ScreenControl(userControls, L"BUTTON", L"Add user",
+                      WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 165, 265, 120, 30, h, ID_ADD_USER);
+        userResultBox =
+            ScreenControl(userControls, L"EDIT", L"The generated member ID will appear here.",
+                          WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_READONLY, 35, 325,
+                          700, 120, h, ID_USER_RESULT);
 
         ScreenControl(addToolControls, L"STATIC", L"Add a tool", WS_CHILD | WS_VISIBLE, 35, 55, 200,
                       24, h, 0);
@@ -479,23 +446,24 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         ScreenControl(addToolControls, L"STATIC", L"Asset tag", WS_CHILD | WS_VISIBLE, 35, 140, 110,
                       20, h, ID_ASSET_TAG_LABEL);
         assetTagBox = ScreenControl(addToolControls, L"EDIT", L"",
-                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 137, 220,
-                                    24, h, ID_ASSET_TAG);
+                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 137,
+                                    220, 24, h, ID_ASSET_TAG);
         ScreenControl(addToolControls, L"STATIC", L"Tool name", WS_CHILD | WS_VISIBLE, 35, 180, 110,
                       20, h, ID_TOOL_NAME_LABEL);
         toolNameBox = ScreenControl(addToolControls, L"EDIT", L"",
-                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 177, 300,
-                                    24, h, ID_TOOL_NAME);
+                                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 177,
+                                    300, 24, h, ID_TOOL_NAME);
         ScreenControl(addToolControls, L"STATIC", L"Daily late fee", WS_CHILD | WS_VISIBLE, 35, 220,
                       110, 20, h, ID_LATE_FEE_LABEL);
         lateFeeBox = ScreenControl(addToolControls, L"EDIT", L"0.00",
-                                   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 217, 100,
-                                   24, h, ID_LATE_FEE);
+                                   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 165, 217,
+                                   100, 24, h, ID_LATE_FEE);
         ScreenControl(addToolControls, L"BUTTON", L"Add tool",
                       WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 165, 265, 120, 30, h, ID_ADD_TOOL);
-        toolResultBox = ScreenControl(addToolControls, L"EDIT", L"The generated tool ID will appear here.",
-                                      WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_READONLY,
-                                      35, 325, 700, 120, h, ID_TOOL_RESULT);
+        toolResultBox =
+            ScreenControl(addToolControls, L"EDIT", L"The generated tool ID will appear here.",
+                          WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_READONLY, 35, 325,
+                          700, 120, h, ID_TOOL_RESULT);
 
         ShowScreen(0);
         return 0;
@@ -537,8 +505,15 @@ static LRESULT CALLBACK WindowProc(HWND h, UINT msg, WPARAM w, LPARAM l)
     }
     return DefWindowProc(h, msg, w, l);
 }
+// Validates endpoint and Legacy credential configuration before creating the desktop window.
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int show)
 {
+    std::wstring endpointError;
+    if (!LoadClientEndpointConfiguration(endpointConfiguration, endpointError))
+    {
+        MessageBox(nullptr, endpointError.c_str(), L"Endpoint configuration error", MB_ICONERROR);
+        return 1;
+    }
     std::wstring credentialError;
     if (!LoadLegacyCredential(credentialError))
     {

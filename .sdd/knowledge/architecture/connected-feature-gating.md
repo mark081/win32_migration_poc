@@ -13,12 +13,13 @@ sources:
   - resource: repo://src/AppServer/ConnectedTelemetry.cs#L13-L385
   - resource: repo://src/AppServer/App.config#L6-L12
   - resource: repo://src/AppServer/Capabilities.cs#L42-L166
+  - resource: repo://src/AppServer/CheckoutDecisions.cs#L90-L390
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
@@ -45,3 +46,11 @@ A workflow child mode is `legacy`, `compare`, or `service` beneath the parent ga
 The configured snapshot path is empty by default, so the public capability route reports a disabled parent and Legacy mode after deployment ([App.config:6](../../../src/AppServer/App.config#L6), [Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63)). The route accepts a bounded client version only as a narrowing input and forces Legacy for missing or unsafe versions. It is routing metadata, not authorization, and no workflow router consumes it yet.
 
 The capability route now uses the additive telemetry seam to emit separate `connected.enabled` and `connected.checkout.rule-mode` records with safe values, reason, configuration version, hashed server-owned practice context, and correlation ID ([Capabilities.cs:87](../../../src/AppServer/Capabilities.cs#L87), [Capabilities.cs:98](../../../src/AppServer/Capabilities.cs#L98)). Sink failure remains isolated, and telemetry is still not business audit or workflow state.
+
+The checkout-decision route re-evaluates the parent and child from cached server state for every
+request. A disabled/Legacy result or a mismatched configuration version returns
+`CAPABILITY_STALE`; neither client capability text nor a Legacy observation can elevate the current
+mode ([CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136)). Compare mode
+uses the Legacy observation only as its effective presentation result and records the independently
+calculated service result; service mode uses the service result. Both remain advisory until the
+unchanged PostgreSQL checkout command commits.

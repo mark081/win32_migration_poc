@@ -45,7 +45,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientTransport.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClientTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NativeRules\NativeRules.vcxproj">

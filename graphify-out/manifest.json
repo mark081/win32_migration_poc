@@ -162,9 +162,9 @@
     "semantic_hash": "c56ecaec8eea8ad30d4ee80a4e9a5d00"
   },
   "src/AppServer/AppServer.csproj": {
-    "mtime": 1788366675.3971167,
-    "seen": 1788366884.4738145,
-    "ast_hash": "ea3a784e3fdde4406ea3e728470f3f9c",
+    "mtime": 1788391878.6712067,
+    "seen": 1788392563.3500237,
+    "ast_hash": "d26ac5b392da73fdf6b0b76442370c87",
     "semantic_hash": ""
   },
   "src/AppServer/Controllers.cs": {
@@ -198,10 +198,10 @@
     "semantic_hash": "c9f84b97a17ca8b31017bad0af64b51b"
   },
   "src/DesktopClient/main.cpp": {
-    "mtime": 1787801393.5220964,
-    "seen": 1787970509.162271,
-    "ast_hash": "0560c3ffb7a3fa1277ed6231d723f7f8",
-    "semantic_hash": "0560c3ffb7a3fa1277ed6231d723f7f8"
+    "mtime": 1788392457.8725708,
+    "seen": 1788392563.3500426,
+    "ast_hash": "878b5a43eb701fa7eccecd1ff10a37f2",
+    "semantic_hash": ""
   },
   "src/NativeRules/NativeRules.cpp": {
     "mtime": 1788046793.9826777,
@@ -234,15 +234,15 @@
     "semantic_hash": "74588cc841c9343d8f557e113993f438"
   },
   "tests/Integration/ApiTests.ps1": {
-    "mtime": 1788366675.3971167,
-    "seen": 1788366884.4738452,
-    "ast_hash": "e7217bf31c72f569f6be208aa263e4a6",
+    "mtime": 1788392380.1662958,
+    "seen": 1788392563.3500528,
+    "ast_hash": "2492f3b99977d858f6a3ecb021469262",
     "semantic_hash": ""
   },
   "tests/NativeRulesTests/main.cpp": {
-    "mtime": 1788046793.9826777,
-    "seen": 1788047128.930479,
-    "ast_hash": "e1b238236e81c203fbdd676ba8c9d94a",
+    "mtime": 1788392944.6873405,
+    "seen": 1788393099.8389628,
+    "ast_hash": "9252fd38b3b2a2f3d66070c1ec3a8af9",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -252,16 +252,16 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1787801393.5220964,
-    "seen": 1787970509.1622815,
-    "ast_hash": "a58d0cec1e12bdecc47bb1f1df1bd8f6",
-    "semantic_hash": "a58d0cec1e12bdecc47bb1f1df1bd8f6"
+    "mtime": 1788392457.8725708,
+    "seen": 1788392563.3500738,
+    "ast_hash": "f397578c82f543c8dac1b0059ee6b135",
+    "semantic_hash": ""
   },
   "docs/architecture.md": {
-    "mtime": 1787801393.5220964,
-    "seen": 1787970509.162283,
-    "ast_hash": "c888235bc17f64ebe65c5a24ff136d10",
-    "semantic_hash": "c888235bc17f64ebe65c5a24ff136d10"
+    "mtime": 1788392457.8725708,
+    "seen": 1788392563.3500776,
+    "ast_hash": "5d50f9d902754de11573d30c88bcb1c5",
+    "semantic_hash": ""
   },
   "docs/legacy-shared-credential.md": {
     "mtime": 1787801393.5220964,
@@ -294,9 +294,9 @@
     "semantic_hash": "8d96c4b50a9642d25c3850348cd318e9"
   },
   ".sdd/knowledge/source-manifest.json": {
-    "mtime": 1788302759.4613214,
-    "seen": 1788366884.473771,
-    "ast_hash": "b89862494eab327e6a68219decf360aa",
+    "mtime": 1788392856.5344276,
+    "seen": 1788393099.8388968,
+    "ast_hash": "761e7aa12f1e90e6d6474a651135bcc6",
     "semantic_hash": ""
   },
   ".sdd/knowledge/architecture/index.md": {
@@ -306,39 +306,39 @@
     "semantic_hash": ""
   },
   ".sdd/knowledge/architecture/runtime-components.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738512,
-    "ast_hash": "445a0efa3d0dbb4ee69d663010c16e55",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389666,
+    "ast_hash": "440468b82a037049fc6b1a862d06fc24",
     "semantic_hash": ""
   },
   ".sdd/knowledge/bundle-state.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738524,
-    "ast_hash": "d3c926a0084e2f3562b031ac723e1c92",
+    "mtime": 1788392883.243611,
+    "seen": 1788393099.8389678,
+    "ast_hash": "c65bf1f8a652260085fddfc2e20acac2",
     "semantic_hash": ""
   },
   ".sdd/knowledge/constraints.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738536,
-    "ast_hash": "5581a7615296a915fcd6e10930a12906",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.838969,
+    "ast_hash": "5b6f0ea71a1ecbca253fd8b3d41737c6",
     "semantic_hash": ""
   },
   ".sdd/knowledge/data/ownership.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.473855,
-    "ast_hash": "b5c209cf4153004f90b107eb30d5ba04",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389702,
+    "ast_hash": "9259489e165f7abab7621f4bfecb899e",
     "semantic_hash": ""
   },
   ".sdd/knowledge/glossary.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738564,
-    "ast_hash": "65f19dd2a57b2a54b511565ecc9b72ee",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389714,
+    "ast_hash": "644386c3f71fc3aa5502d8530cadfa7d",
     "semantic_hash": ""
   },
   ".sdd/knowledge/hotspots-and-risks.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.473858,
-    "ast_hash": "67edcef49ed07bb9cb041a5ea271744d",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389723,
+    "ast_hash": "1ce62c4ee4c6723cd231ed63dd9414de",
     "semantic_hash": ""
   },
   ".sdd/knowledge/index.md": {
@@ -348,27 +348,27 @@
     "semantic_hash": ""
   },
   ".sdd/knowledge/interfaces/api-v1.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738605,
-    "ast_hash": "67a77a5b4744c337992ad695464cb324",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.838975,
+    "ast_hash": "db0a7b22f6d8b533f5bdef6cc44e2ac5",
     "semantic_hash": ""
   },
   ".sdd/knowledge/open-questions.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.473862,
-    "ast_hash": "ae7da6947005acf51d4da5b2d453e4a2",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.838976,
+    "ast_hash": "622a4bb128027cc51440c7ee15ddc420",
     "semantic_hash": ""
   },
   ".sdd/knowledge/operations/build-test-deploy.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738634,
-    "ast_hash": "067aa11fc829d05e432d50140d6977aa",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389773,
+    "ast_hash": "81fc420c5de55a9fb2205273127bad56",
     "semantic_hash": ""
   },
   ".sdd/knowledge/system-overview.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.4738648,
-    "ast_hash": "3a4328b5638dc004a73ee370ccb846bc",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.8389783,
+    "ast_hash": "398bf8e51a4890b26a1ba8e437d8ef9f",
     "semantic_hash": ""
   },
   "docs/demo.md": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   ".sdd/knowledge/architecture/connected-feature-gating.md": {
-    "mtime": 1788302751.9123096,
-    "seen": 1788366884.473848,
-    "ast_hash": "eed117877ae9dc99c42b4791d60ca310",
+    "mtime": 1788392876.3818924,
+    "seen": 1788393099.838964,
+    "ast_hash": "d1f24930aef91706877e14ea81e51ddb",
     "semantic_hash": ""
   },
   "DESIGN.md": {
@@ -396,9 +396,9 @@
     "semantic_hash": ""
   },
   "TASKS.md": {
-    "mtime": 1788302840.013049,
-    "seen": 1788366884.473872,
-    "ast_hash": "86cd6156387b1489aca0b66851868ef6",
+    "mtime": 1788367063.5755968,
+    "seen": 1788392563.3500764,
+    "ast_hash": "7f98a1d07b0feb73289d188d4a193896",
     "semantic_hash": ""
   },
   "config/connected-features.disabled.example.json": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "tests/AppServer.FeatureTests/Program.cs": {
-    "mtime": 1788366797.9428446,
-    "seen": 1788366884.473841,
-    "ast_hash": "77d5778bb72658791b5f7b37378bfe13",
+    "mtime": 1788392828.9997613,
+    "seen": 1788392856.1767693,
+    "ast_hash": "9d9e60b0f918eca2bb9c045a19e361a9",
     "semantic_hash": ""
   },
   "src/AppServer/ConnectedTelemetry.cs": {
@@ -447,6 +447,24 @@
     "mtime": 1788366788.4007738,
     "seen": 1788366884.4738162,
     "ast_hash": "76ed48c7c1da3296510cdb6298fbfabc",
+    "semantic_hash": ""
+  },
+  "src/AppServer/CheckoutDecisions.cs": {
+    "mtime": 1788392777.3680317,
+    "seen": 1788392856.176747,
+    "ast_hash": "cd47a72ed441423529ed0c2e7aec13c6",
+    "semantic_hash": ""
+  },
+  "src/DesktopClient/ClientTransport.cpp": {
+    "mtime": 1788392821.2536688,
+    "seen": 1788392856.1767604,
+    "ast_hash": "47cd7a3a91627fd055afaa45055009d9",
+    "semantic_hash": ""
+  },
+  "src/DesktopClient/ClientTransport.h": {
+    "mtime": 1788392821.2536688,
+    "seen": 1788392856.1767616,
+    "ast_hash": "ee0c1b72f0d7c9e0a902946d077d4a61",
     "semantic_hash": ""
   }
 }

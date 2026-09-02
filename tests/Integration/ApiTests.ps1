@@ -24,6 +24,11 @@ function Post-Raw([string]$path, [string]$body, [string]$key = ([guid]::NewGuid(
         -ContentType 'application/json' -Body $body
 }
 
+function Post-Decision([hashtable]$body, [hashtable]$requestHeaders = $headers) {
+    Invoke-RestMethod -Uri "$base/checkout-decisions" -Method Post -Headers $requestHeaders `
+        -ContentType 'application/json' -Body ($body | ConvertTo-Json -Depth 4)
+}
+
 function Assert-ApiError(
     [scriptblock]$action,
     [int]$expectedStatus,
@@ -100,6 +105,18 @@ Assert ($invalidVersionCapability.connectedEnabled -eq $false) `
     'overlong client version narrows capability'
 Assert ($invalidVersionCapability.reason -eq 'CLIENT_VERSION_INVALID') `
     'invalid client version has a safe reason'
+
+# Decision reads require a current server-permitted Connected mode and no idempotency key.
+$decisionBody = @{
+    memberId = 1
+    dueOn = $due
+    clientVersion = '1.0.0'
+    capabilityConfigurationVersion = 'synthetic-stale-configuration'
+}
+Assert-ApiError { Post-Decision $decisionBody } 409 'CAPABILITY_STALE' `
+    'disabled capability cannot route a decision'
+Assert-ApiError { Post-Decision @{ memberId = 0; dueOn = $due } } 400 $null `
+    'invalid decision model'
 
 # Invalid bodies and idempotency keys.
 Assert-ApiError { Post-Raw 'checkouts' 'null' } 400 $null 'null checkout body'
@@ -278,5 +295,8 @@ Assert-ApiError `
 Assert-ApiError { Invoke-RestMethod -Uri "$base/tools" } 401 $null 'unauthorized request'
 Assert-ApiError { Invoke-RestMethod -Uri "$base/capabilities" } 401 $null `
     'unauthorized capability request'
+Assert-ApiError {
+    Post-Decision $decisionBody @{}
+} 401 $null 'unauthorized checkout decision request'
 
 Write-Host 'API integration tests passed.'

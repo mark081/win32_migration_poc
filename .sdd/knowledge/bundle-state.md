@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T16:37:01+00:00
+  at: 2026-09-02T23:45:00+00:00
 status: draft
-source_revision: 5fc24fa195f089ac9f1fbe59d50df9a15ef403e3
-source_fingerprint: 93092c2d642772bd4df19a24befe6d8185a664e40c7abd21a873a0fadfbc2925
+source_revision: f53a98427070af5f64bdce85b015fc66ca863210
+source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
 source_worktree: dirty
 curation_status: generated
 ---
@@ -59,3 +59,21 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
 - Unchanged after verification: data ownership, constraints, glossary, and open questions. The route reads only cached feature state, emits non-authoritative diagnostics, and has no repository, workflow, idempotency, audit, or database dependency.
 - Graph refresh: `graphify update .` rebuilt 691 nodes and 1,233 edges. Graphify still reports `NativeRules.h` as partially extracted; the capability route, service adapter, evaluator/telemetry dependencies, and tests were extracted successfully.
 - Pre-update manifest diff: added `src/AppServer/Capabilities.cs`; modified the AppServer project, focused test harness, and API integration suite.
+
+## Wave 5 update disposition
+
+- Revised: system overview and runtime components for the checkout-decision route and configured
+  transport; API interface for the authenticated read-only contract and stable errors; Connected
+  feature-gate policy for per-decision server re-evaluation; data ownership for verified read-only
+  behavior; build/test operations for decision and transport coverage; hotspots and risks for the
+  remaining unwired client capability router.
+- Unchanged after verification: constraints, glossary, and open questions. Wave 5 changes no
+  approved scope, term meaning, database routine/schema, data owner, or unresolved design decision.
+- Graph refresh: final `graphify update .` rebuilt 799 nodes and 1,497 edges. The existing
+  `NativeRules.h` partial-extraction warning remains; direct source/test inspection still supplies
+  its evidence. Graphify also reported that saved community labels lag the new community set; this
+  affects generated labels, not verified source relationships.
+- Pre-update manifest diff: added `CheckoutDecisions.cs`, `ClientTransport.cpp`, and
+  `ClientTransport.h`; modified the application/client/test projects, UI entry point, focused/API
+  tests, README, and architecture documentation. Reconciled fingerprint:
+  `03f5d984f90e6165e528dd9797b210af9be4925f02a51cfdb8dc2b55f7f3d4fc`.
