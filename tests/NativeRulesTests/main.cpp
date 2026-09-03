@@ -8,6 +8,7 @@
 #include "../../src/NativeRules/NativeRules.h"
 #include "../../src/DesktopClient/ClientTransport.h"
 #include "../../src/DesktopClient/CapabilityRouter.h"
+#include "../../src/DesktopClient/CheckoutMode.h"
 static_assert(NR_ALLOWED == 0, "version 1 allowed reason changed");
 static_assert(NR_INACTIVE == 1, "version 1 inactive reason changed");
 static_assert(NR_OVERDUE == 2, "version 1 overdue reason changed");
@@ -201,11 +202,41 @@ static void checkCapabilityRouting()
     check(unconfigured.Mode(now) == ClientRuleMode::Legacy, "unconfigured client preserves Legacy");
 }
 
+// Confirms the native adapter preserves every stable reason and the compare body carries one
+// observation without an idempotency key or checkout command.
+static void checkCompareCheckout()
+{
+    const NativeCheckoutObservation allowed = ObserveNativeCheckout(true, false, 0, L"STANDARD");
+    check(allowed.allowed && allowed.reason == "ALLOWED", "native adapter maps allowed");
+    check(ObserveNativeCheckout(false, false, 0, L"STANDARD").reason == "MEMBER_INACTIVE",
+          "native adapter maps inactive");
+    check(ObserveNativeCheckout(true, true, 0, L"STANDARD").reason == "OVERDUE",
+          "native adapter maps overdue");
+    check(ObserveNativeCheckout(true, false, 2, L"STANDARD").reason == "CHECKOUT_LIMIT_REACHED",
+          "native adapter maps limit");
+    check(ObserveNativeCheckout(true, false, 0, L"UNKNOWN").reason == "TIER_UNSUPPORTED",
+          "native adapter maps tier");
+    const std::string request =
+        BuildCompareDecisionRequest(L"7", L"2026-09-04", L"configuration-1", allowed);
+    check(request.find("\"memberId\":7") != std::string::npos, "compare request contains member");
+    check(request.find("\"capabilityConfigurationVersion\":\"configuration-1\"") !=
+              std::string::npos,
+          "compare request contains capability version");
+    check(request.find("\"legacyObservation\":{\"contractVersion\":1,\"allowed\":true,"
+                       "\"reason\":\"ALLOWED\"}") != std::string::npos,
+          "compare request contains one native observation");
+    check(request.find("idempotency") == std::string::npos,
+          "compare request contains no idempotency key");
+    check(request.find("toolId") == std::string::npos,
+          "compare request cannot submit checkout command");
+}
+
 // Runs every native rule and client transport contract check.
 int main()
 {
     checkTransportConfiguration();
     checkCapabilityRouting();
+    checkCompareCheckout();
     check(CheckoutLimit(L"STANDARD") == 2, "standard limit");
     check(CheckoutLimit(L"SUPPORTER") == 5, "supporter limit");
     check(CheckoutLimit(L"STAFF") == 10, "staff limit");

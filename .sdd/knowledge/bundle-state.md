@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T21:05:00+00:00
+  at: 2026-09-03T22:04:44+00:00
 status: draft
-source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
-source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
+source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
+source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
 source_worktree: dirty
 curation_status: generated
 ---
@@ -93,3 +93,16 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
   previously reconciled Wave 5 checkout-decision and transport paths were also present because its
   manifest sidecar still identified the pre-Wave-5 commit. Reconciled fingerprint:
   `019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4`.
+
+## Wave 7 update disposition
+
+- Revised: system overview, runtime components, API interface, build/test operations, and hotspots
+  for the Legacy/compare checkout client integration and structured NativeRules adapter.
+- Unchanged after verification: Connected feature-gate policy, data ownership, constraints,
+  glossary, and open questions. Compare remains beneath the existing parent/child evaluation,
+  creates no durable decision state, and retains the existing single PostgreSQL-backed writer.
+- Graph refresh: `graphify update .` rebuilt 845 nodes and 1,608 edges. The existing
+  `NativeRules.h` partial-extraction warning remains and direct source/test evidence covers it.
+- Pre-update manifest diff: added `CheckoutMode.cpp` and `.h`; modified capability cache access,
+  desktop checkout flow, client/test projects, native and FlaUI harnesses, README, and architecture docs.
+  Reconciled fingerprint: `5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e`.

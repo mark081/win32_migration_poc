@@ -46,11 +46,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CapabilityRouter.cpp" />
+    <ClCompile Include="CheckoutMode.cpp" />
     <ClCompile Include="ClientTransport.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapabilityRouter.h" />
+    <ClInclude Include="CheckoutMode.h" />
     <ClInclude Include="ClientTransport.h" />
   </ItemGroup>
   <ItemGroup>

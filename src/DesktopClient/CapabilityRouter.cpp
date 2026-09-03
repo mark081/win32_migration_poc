@@ -107,7 +107,7 @@ bool ValidConfigurationVersion(const std::string &value)
     if (value.empty() || value.size() > 128)
         return false;
     for (unsigned char c : value)
-        if (c < 0x21 || c > 0x7e)
+        if (!std::isalnum(c) && c != '.' && c != '-' && c != '_')
             return false;
     return true;
 }
@@ -184,6 +184,18 @@ ClientRuleMode EndpointRouter::Mode(std::time_t now) const
     return configuration_.hasConnected && cache_.valid && now < cache_.expiresAt
                ? cache_.mode
                : ClientRuleMode::Legacy;
+}
+
+// Prevents an expired capability version from entering a later decision request.
+std::wstring EndpointRouter::ConfigurationVersion(std::time_t now) const
+{
+    return Mode(now) == ClientRuleMode::Legacy ? L"" : cache_.configurationVersion;
+}
+
+// Clears the process-local cache without changing external configuration.
+void EndpointRouter::Invalidate()
+{
+    cache_ = CapabilityCache();
 }
 
 // Returns UTC epoch seconds using the Windows system clock.

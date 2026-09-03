@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace ToolLending.DesktopClient.UiTests;
 
+// Protects the visible desktop contract while checkout routing changes underneath the Win32 UI.
 [TestFixture]
 [Apartment(System.Threading.ApartmentState.STA)]
 public sealed class DesktopClientTests
@@ -162,6 +163,27 @@ public sealed class DesktopClientTests
         dialog.FindFirstDescendant(cf => cf.ByName("OK"))?.AsButton().Invoke();
     }
 
+    // Confirms the Legacy/compare migration retains operator confirmation and that cancellation
+    // produces no success output or checkout request. The database remains the final writer.
+    [Test]
+    public void CheckoutCancellationDoesNotReportSuccess()
+    {
+        var outputBefore = Find("109").AsTextBox().Text;
+        Find(MemberId).AsTextBox().Text = "1";
+        Find(ToolId).AsTextBox().Text = "1";
+        Find(DueDate).AsTextBox().Text = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
+        Find(CheckOut).AsButton().Invoke();
+
+        var dialog = WaitForModalWindow("Confirm");
+        Assert.That(
+            dialog.FindFirstDescendant(cf => cf.ByName("Complete this checkout?")),
+            Is.Not.Null
+        );
+        dialog.FindFirstDescendant(cf => cf.ByName("No"))?.AsButton().Invoke();
+
+        Assert.That(Find("109").AsTextBox().Text, Is.EqualTo(outputBefore));
+    }
+
     private AutomationElement Find(string automationId)
     {
         return window!.FindFirstDescendant(cf => cf.ByAutomationId(automationId))
@@ -181,7 +203,8 @@ public sealed class DesktopClientTests
         tab.Select();
     }
 
-    private Window WaitForModalWindow()
+    // Waits for an unowned Win32 message box by title because it appears under the desktop root.
+    private Window WaitForModalWindow(string title = "Validation")
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (DateTime.UtcNow < deadline)
@@ -190,7 +213,7 @@ public sealed class DesktopClientTests
             // exposes them as top-level desktop windows rather than children of the main window.
             var dialog = automation!
                 .GetDesktop()
-                .FindFirstChild(cf => cf.ByName("Validation"))
+                .FindFirstChild(cf => cf.ByName(title))
                 ?.AsWindow();
             if (dialog is not null)
             {

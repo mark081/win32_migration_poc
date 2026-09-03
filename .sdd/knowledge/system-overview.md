@@ -8,16 +8,17 @@ sources:
   - resource: repo://README.md#L16-L59
   - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
   - resource: repo://src/DesktopClient/CapabilityRouter.cpp#L117-L188
+  - resource: repo://src/DesktopClient/CheckoutMode.cpp#L36-L74
   - resource: repo://src/AppServer/Program.cs#L14-L37
   - resource: repo://src/AppServer/Capabilities.cs#L126-L166
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L322-L390
   - resource: repo://docs/architecture.md#L1-L26
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T21:05:00+00:00
+  at: 2026-09-03T22:04:44+00:00
 status: draft
-source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
-source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
+source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
+source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
 source_worktree: dirty
 curation_status: generated
 ---
@@ -29,6 +30,7 @@ The application is a Windows/x86 client-server system. A native Win32 client cal
 ## Entry points
 
 - The interactive client starts in `wWinMain`, validates endpoint configuration, loads the Legacy credential, and creates a process-local capability router. Configured clients bootstrap through Connected HTTPS and route product calls there only while a current schema 1 compare/service capability is cached; all other states route Legacy ([main.cpp:130](../../src/DesktopClient/main.cpp#L130), [CapabilityRouter.cpp:124](../../src/DesktopClient/CapabilityRouter.cpp#L124)).
+- Legacy and compare checkout modes both retain one NativeRules decision. Compare additionally sends the structured native result to the read-only decision route; a valid response preserves that result and a failed comparison cannot create a command by itself ([CheckoutMode.cpp:36](../../src/DesktopClient/CheckoutMode.cpp#L36), [main.cpp:350](../../src/DesktopClient/main.cpp#L350)).
 - The application service runs either in console mode or as a Windows service and binds the configured OWIN base address ([Program.cs:14](../../src/AppServer/Program.cs#L14), [Program.cs:37](../../src/AppServer/Program.cs#L37)).
 - Database behavior is installed through versioned SQL scripts under `database/`; build and test orchestration lives under `scripts/` ([README.md:384](../../README.md#L384)).
 

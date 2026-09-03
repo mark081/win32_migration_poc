@@ -55,6 +55,12 @@ class EndpointRouter
     // Reports the effective routing mode; stale cache state is always reported as Legacy.
     ClientRuleMode Mode(std::time_t now) const;
 
+    // Returns the service configuration version only while the capability is current.
+    std::wstring ConfigurationVersion(std::time_t now) const;
+
+    // Discards routing evidence after a stale or unusable decision response.
+    void Invalidate();
+
   private:
     const ClientEndpointConfiguration &configuration_;
     CapabilityCache cache_;

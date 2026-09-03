@@ -69,3 +69,9 @@ unexpected. The client caches only a current schema 1 service capability and sel
 `compare` or `service`. Missing, malformed, unsupported, future-dated, expired, disabled, and failed
 capabilities select Legacy. The process-local cache is refreshed on the first product request after
 expiry, so a service rollback needs no client restart or deployment.
+
+Legacy mode retains the existing structured NativeRules decision and checkout command. Compare mode
+sends that native result once to the read-only decision route, uses the returned Legacy-effective
+result when valid, and warns while retaining the native result if comparison fails. Neither path
+creates more than one checkout command, and neither treats a decision response as committed
+success; the existing PostgreSQL routine remains the final writer and rule check.

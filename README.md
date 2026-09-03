@@ -296,6 +296,13 @@ bypass. A keyed write may be replayed once after a timeout or unavailable result
 the exact same idempotency key. Missing or invalid Connected configuration fails closed at startup
 and never falls back to the local demo credential.
 
+In compare mode, checkout still calls the versioned NativeRules result once and sends that
+allow/deny reason to the read-only decision endpoint. A completed compare response returns the same
+Legacy-effective result while the service records normalized evidence. A comparison failure warns
+the operator and retains the Legacy decision; it does not submit a second command or report the
+decision as checkout success. Confirmation still precedes the single idempotent checkout command,
+and PostgreSQL still makes the final transactional decision.
+
 ## Build and run
 
 Windows 11 Pro is the recommended development host, including when VS Code connects remotely from macOS. The API can run in console mode during development, so installing a Windows service is optional. See the [Windows 11 Pro and VS Code setup guide](docs/windows-11-pro-setup.md).

@@ -42,6 +42,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\DesktopClient\CapabilityRouter.cpp" />
+    <ClCompile Include="..\..\src\DesktopClient\CheckoutMode.cpp" />
     <ClCompile Include="..\..\src\DesktopClient\ClientTransport.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

@@ -16,16 +16,18 @@ sources:
   - resource: repo://tests/Integration/ApiTests.ps1#L76-L108
   - resource: repo://tests/NativeRulesTests/main.cpp#L38-L107
   - resource: repo://tests/NativeRulesTests/main.cpp#L158-L203
+  - resource: repo://tests/NativeRulesTests/main.cpp#L205-L235
+  - resource: repo://tests/DesktopClient.UiTests/DesktopClientTests.cs#L166-L185
   - resource: repo://tests/AppServer.FeatureTests/Program.cs#L860-L1030
   - resource: repo://docs/testing-evolution.md#L47-L256
   - resource: repo://README.md#L274-L359
   - resource: repo://AGENTS.md#L205-L215
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T21:05:00+00:00
+  at: 2026-09-03T22:04:44+00:00
 status: draft
-source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
-source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
+source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
+source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
 source_worktree: dirty
 curation_status: generated
 ---
@@ -45,6 +47,8 @@ The supported build is Windows/x86 using NuGet restore and MSBuild for the legac
 - Capability checks cover disabled, Legacy, compare, and service response mapping; freshness/correlation fields; parent and child telemetry; and missing, malformed, and overlong client-version fallback ([Program.cs:775](../../../tests/AppServer.FeatureTests/Program.cs#L775), [Program.cs:810](../../../tests/AppServer.FeatureTests/Program.cs#L810)). API integration verifies authentication, the disabled-by-default response, safe schema, targeting-data exclusion, correlation preservation, and version fallback ([ApiTests.ps1:76](../../../tests/Integration/ApiTests.ps1#L76)).
 - Decision checks cover service and compare results, stale routing, missing observations, failed reads, comparison evidence, and a real PostgreSQL before/after fingerprint. API integration covers authentication, validation, and disabled-by-default stale routing. The native executable also serves as a focused transport harness for endpoint defaults, HTTPS-only Connected configuration, separate credential failure, timeout bounds, and unavailable-service classification ([Program.cs:860](../../../tests/AppServer.FeatureTests/Program.cs#L860), [main.cpp:38](../../../tests/NativeRulesTests/main.cpp#L38)).
 - The native harness also covers absent, compare, service, expired, unsupported-schema, malformed, duplicate-field, future-dated, stale, and unconfigured capability routing. Each unsafe case selects Legacy without workflow or network activity ([main.cpp:158](../../../tests/NativeRulesTests/main.cpp#L158)).
+- Compare-client checks cover every native reason mapping and verify that the decision request contains one versioned observation but no tool ID, command, or idempotency key ([main.cpp:205](../../../tests/NativeRulesTests/main.cpp#L205)).
+- FlaUI covers the retained checkout confirmation and proves cancellation leaves the client output unchanged, so neither a request nor success is reported before operator approval ([DesktopClientTests.cs:166](../../../tests/DesktopClient.UiTests/DesktopClientTests.cs#L166)).
 - UI tests should protect wiring and visible behavior; domain permutations belong primarily in native, service, or API tests ([testing-evolution.md:115](../../../docs/testing-evolution.md#L115)).
 
 ## Change-sensitive scenarios

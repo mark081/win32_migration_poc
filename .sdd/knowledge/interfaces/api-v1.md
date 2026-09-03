@@ -12,14 +12,15 @@ sources:
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L44-L390
   - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
   - resource: repo://src/DesktopClient/CapabilityRouter.cpp#L124-L188
+  - resource: repo://src/DesktopClient/CheckoutMode.cpp#L36-L74
   - resource: repo://tests/Integration/ApiTests.ps1#L70-L239
   - resource: repo://AGENTS.md#L81-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T21:05:00+00:00
+  at: 2026-09-03T22:04:44+00:00
 status: draft
-source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
-source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
+source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
+source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
 source_worktree: dirty
 curation_status: generated
 ---
@@ -36,6 +37,7 @@ The service exposes versioned `/api/v1` routes for tools, members, reservations,
 - `GET /api/v1/capabilities` is protected by the same API-key handler and returns schema/configuration versions, evaluation/expiry times, effective parent and child routing values, a safe reason, and a correlation ID. Missing, malformed, or overlong `X-Client-Version` values force a disabled/Legacy response; request headers cannot elevate the evaluator's service-owned result ([Capabilities.cs:42](../../../src/AppServer/Capabilities.cs#L42), [Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63), [Capabilities.cs:126](../../../src/AppServer/Capabilities.cs#L126)).
 - Capability responses exclude practice keys, raw targeting values, provider data, credentials, and business authorization. A valid UUID `X-Correlation-ID` is preserved; other values are replaced before diagnostics ([Capabilities.cs:25](../../../src/AppServer/Capabilities.cs#L25), [Capabilities.cs:159](../../../src/AppServer/Capabilities.cs#L159)).
 - `POST /api/v1/checkout-decisions` requires no idempotency key because it performs no write. It re-evaluates service-owned capability state, returns versioned allow/deny facts for compare or service mode, reports stale routing as `409 CAPABILITY_STALE`, unavailable PostgreSQL reads as `503 DECISION_UNAVAILABLE`, and unexpected failures without raw exception details ([CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136), [CheckoutDecisions.cs:322](../../../src/AppServer/CheckoutDecisions.cs#L322)).
+- The compare client sends contract version 1, member/date input, its cached configuration version, and exactly one structured native observation. It accepts the response only when mode, reason, and result agree with that Legacy observation; otherwise it discards the capability and retains Legacy behavior ([CheckoutMode.cpp:63](../../../src/DesktopClient/CheckoutMode.cpp#L63), [main.cpp:186](../../../src/DesktopClient/main.cpp#L186)).
 
 ## Current network boundary
 

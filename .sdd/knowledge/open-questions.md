@@ -8,10 +8,10 @@ sources:
   - resource: repo://docs/testing-evolution.md#L47-L61
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T21:05:00+00:00
+  at: 2026-09-03T22:04:44+00:00
 status: draft
-source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
-source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
+source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
+source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
 source_worktree: dirty
 curation_status: generated
 ---

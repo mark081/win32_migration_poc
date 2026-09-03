@@ -11,6 +11,7 @@
 #include "../NativeRules/NativeRules.h"
 #include "ClientTransport.h"
 #include "CapabilityRouter.h"
+#include "CheckoutMode.h"
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "comctl32.lib")
 
@@ -136,6 +137,7 @@ static std::wstring Http(const wchar_t *verb, const std::wstring &path,
                                                  endpointRouter->Endpoint(now), verb, path,
                                                  endpointRouter->ApiKey(now, apiKey), body, key));
 }
+
 static std::wstring Text(HWND h)
 {
     int n = GetWindowTextLength(h);
@@ -176,6 +178,32 @@ static std::wstring JsonString(const std::wstring &j, const wchar_t *name)
     p += k.size();
     auto e = j.find(L'\"', p);
     return j.substr(p, e - p);
+}
+
+// Calls the compare-only decision endpoint through the current Connected route. A failed or
+// malformed response leaves the native observation effective and is never treated as checkout
+// success. The later checkout command, if any, still uses its own single idempotency key.
+static NativeCheckoutObservation CompareCheckout(const std::wstring &member,
+                                                 const std::wstring &due,
+                                                 const NativeCheckoutObservation &native)
+{
+    const std::time_t now = ClientUtcNow();
+    const std::wstring body = Wide(BuildCompareDecisionRequest(
+        member, due, endpointRouter->ConfigurationVersion(now), native));
+    const std::wstring response = Http(L"POST", L"/api/v1/checkout-decisions", Utf8(body));
+    const std::wstring mode = JsonString(response, L"effectiveMode");
+    const std::wstring reason = JsonString(response, L"reason");
+    const bool allowed = JsonBool(response, L"allowed");
+    if (mode != L"compare" || Utf8(reason) != native.reason || allowed != native.allowed)
+    {
+        endpointRouter->Invalidate();
+        MessageBox(nullptr,
+                   L"Connected comparison was unavailable. Continuing with the Legacy checkout "
+                   L"decision; no checkout has been completed yet.",
+                   L"Connected comparison", MB_ICONWARNING);
+        return native;
+    }
+    return {allowed, Utf8(reason)};
 }
 static std::string JsonEscape(const std::wstring &value)
 {
@@ -316,6 +344,10 @@ static void AddTool()
     SetWindowText(toolResultBox,
                   PrettyJson(Http(L"POST", L"/api/v1/tools", body, NewGuid())).c_str());
 }
+// Runs the Legacy or compare checkout flow while PostgreSQL remains the final writer. Compare mode
+// sends one native observation for shadow evaluation and still submits at most one command after
+// confirmation. NativeRules remains removable only after the migration gate. Scenarios: LOAN-001,
+// LOAN-002, LOAN-003, and UI-001.
 static void Checkout()
 {
     auto member = Text(memberBox), tool = Text(toolBox), due = Text(dueBox);
@@ -326,9 +358,14 @@ static void Checkout()
         return;
     }
     auto m = Http(L"GET", L"/api/v1/members/" + member);
-    auto tier = JsonString(m, L"tier");
-    if (!IsEligibleForCheckout(JsonBool(m, L"active"), JsonBool(m, L"hasOverdueLoan"),
-                               JsonInt(m, L"openLoans"), tier.c_str()))
+    const NativeCheckoutObservation native =
+        ObserveNativeCheckout(JsonBool(m, L"active"), JsonBool(m, L"hasOverdueLoan"),
+                              JsonInt(m, L"openLoans"), JsonString(m, L"tier"));
+    const std::time_t now = ClientUtcNow();
+    const NativeCheckoutObservation effective = endpointRouter->Mode(now) == ClientRuleMode::Compare
+                                                    ? CompareCheckout(member, due, native)
+                                                    : native;
+    if (!effective.allowed)
     {
         MessageBox(nullptr,
                    L"Native business rules say this member is not eligible. The database will "
