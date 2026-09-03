@@ -65,5 +65,7 @@ must use HTTPS and supply their own credential file; they cannot inherit the com
 credential. Windows performs its normal certificate-chain and hostname validation. Resolve,
 connect, send, and receive timeouts are explicitly bounded. Transport failures are classified as
 configuration, timeout, unavailable, authentication, authorization, validation, conflict, or
-unexpected. Current product calls remain on the Legacy endpoint until the capability router is
-implemented in the next task.
+unexpected. The client caches only a current schema 1 service capability and selects Connected for
+`compare` or `service`. Missing, malformed, unsupported, future-dated, expired, disabled, and failed
+capabilities select Legacy. The process-local cache is refreshed on the first product request after
+expiry, so a service rollback needs no client restart or deployment.

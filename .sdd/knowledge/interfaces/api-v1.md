@@ -11,14 +11,15 @@ sources:
   - resource: repo://src/AppServer/Capabilities.cs#L25-L166
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L44-L390
   - resource: repo://src/DesktopClient/ClientTransport.cpp#L171-L354
+  - resource: repo://src/DesktopClient/CapabilityRouter.cpp#L124-L188
   - resource: repo://tests/Integration/ApiTests.ps1#L70-L239
   - resource: repo://AGENTS.md#L81-L103
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T23:45:00+00:00
+  at: 2026-09-03T21:05:00+00:00
 status: draft
-source_revision: f53a98427070af5f64bdce85b015fc66ca863210
-source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
+source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
+source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
 source_worktree: dirty
 curation_status: generated
 ---
@@ -42,9 +43,10 @@ The client defaults its Legacy endpoint to `http://localhost:8088/` but accepts 
 URL. An optional Connected endpoint must be HTTPS and have its own readable, non-empty credential
 file. WinHTTP uses explicit bounded timeouts and its normal certificate/hostname checks; failures
 have stable categories and a keyed ambiguous write is replayed at most once with the same key
-([ClientTransport.cpp:279](../../../src/DesktopClient/ClientTransport.cpp#L279),
-[ClientTransport.cpp:323](../../../src/DesktopClient/ClientTransport.cpp#L323)). No product call
-selects the Connected endpoint until the next capability-router task is implemented.
+([ClientTransport.cpp:284](../../../src/DesktopClient/ClientTransport.cpp#L284),
+[ClientTransport.cpp:328](../../../src/DesktopClient/ClientTransport.cpp#L328)). The client sends its
+bounded version header, accepts only current schema 1 compare/service capability responses, and
+routes every other response or transport failure to Legacy ([CapabilityRouter.cpp:124](../../../src/DesktopClient/CapabilityRouter.cpp#L124), [CapabilityRouter.cpp:137](../../../src/DesktopClient/CapabilityRouter.cpp#L137)).
 
 ## Migration compatibility constraint
 

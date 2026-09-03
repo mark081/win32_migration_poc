@@ -10,6 +10,7 @@
 #include <vector>
 #include "../NativeRules/NativeRules.h"
 #include "ClientTransport.h"
+#include "CapabilityRouter.h"
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "comctl32.lib")
 
@@ -63,6 +64,7 @@ static std::vector<HWND> lendingControls, userControls, addToolControls;
 static std::wstring apiKey = L"demo-local-key";
 static std::wstring credentialMode = L"Legacy shared credential: built-in demo fallback";
 static ClientEndpointConfiguration endpointConfiguration;
+static EndpointRouter *endpointRouter = nullptr;
 static std::string Utf8(const std::wstring &s)
 {
     if (s.empty())
@@ -123,13 +125,16 @@ static bool LoadLegacyCredential(std::wstring &error)
     credentialMode = L"Legacy shared credential file: " + path;
     return true;
 }
-// Sends current product calls to the configured Legacy endpoint. Connected endpoint selection is
-// added only after a current service capability is cached; keyed ambiguous writes reuse their key.
+// Refreshes the short-lived service capability when needed and sends the request through the
+// resulting endpoint. Missing, failed, unsupported, or expired capability state selects Legacy.
 static std::wstring Http(const wchar_t *verb, const std::wstring &path,
                          const std::string &body = "", const std::wstring &key = L"")
 {
-    return FormatClientHttpResult(SendClientHttp(
-        endpointConfiguration, endpointConfiguration.legacy, verb, path, apiKey, body, key));
+    const std::time_t now = ClientUtcNow();
+    endpointRouter->Refresh(now);
+    return FormatClientHttpResult(SendClientHttp(endpointConfiguration,
+                                                 endpointRouter->Endpoint(now), verb, path,
+                                                 endpointRouter->ApiKey(now, apiKey), body, key));
 }
 static std::wstring Text(HWND h)
 {
@@ -520,6 +525,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int show)
         MessageBox(nullptr, credentialError.c_str(), L"Legacy credential error", MB_ICONERROR);
         return 2;
     }
+    EndpointRouter router(endpointConfiguration);
+    endpointRouter = &router;
 
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     INITCOMMONCONTROLSEX controls = {sizeof(INITCOMMONCONTROLSEX), ICC_TAB_CLASSES};

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "source_revision": "f53a98427070af5f64bdce85b015fc66ca863210",
-  "source_fingerprint": "120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b",
+  "source_revision": "17904f336dcb6b9e39221e28bb80a3a0860fc752",
+  "source_fingerprint": "019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4",
   "source_worktree": "dirty",
   "entries": [
     {
@@ -62,7 +62,7 @@
     {
       "path": "README.md",
       "kind": "file",
-      "sha256": "0c2696b165e0ed786f6d1a92ae90b1efc8319acbb31215e6ca686ecaa4ba55e2"
+      "sha256": "03316136d249c4fcad7aaeee86ece727268c241ca257f49d14dd9a05eee86e0f"
     },
     {
       "path": "ToolLending.sln",
@@ -112,7 +112,7 @@
     {
       "path": "docs/architecture.md",
       "kind": "file",
-      "sha256": "f7a1e0cf02142b9a8759a781e516cbb6fe3aea31a222cd45d487620493471310"
+      "sha256": "e1000e3232e69e60ce5b26daa819842f5311348a4efe718d2af7f787700c3368"
     },
     {
       "path": "docs/demo.md",
@@ -226,7 +226,7 @@
     },
     {
       "path": "src/AppServer/CheckoutDecisions.cs",
-      "kind": "untracked",
+      "kind": "file",
       "sha256": "94e2cb913c135eaec1e0ba3d3b3736be51b436d4a48237d1d5bb6b4e84f788ac"
     },
     {
@@ -280,24 +280,34 @@
       "sha256": "2c93fd31edf771aa6f496bfadd79a7f755d5c4ee886c2363c110e32967d8549c"
     },
     {
-      "path": "src/DesktopClient/ClientTransport.cpp",
+      "path": "src/DesktopClient/CapabilityRouter.cpp",
       "kind": "untracked",
-      "sha256": "2780ae1d871db6f76704991d0973c24c875b27d284b14ceba0abf7a91e0f2f12"
+      "sha256": "585a2ecb7bf0650b0cb4932962746fea305c7a6f9dd064df7ad7b9f62b13b9c9"
+    },
+    {
+      "path": "src/DesktopClient/CapabilityRouter.h",
+      "kind": "untracked",
+      "sha256": "49134866b986e882c81676a547f55f9d5b831d1061d37565b06b82b3c4b6f13d"
+    },
+    {
+      "path": "src/DesktopClient/ClientTransport.cpp",
+      "kind": "file",
+      "sha256": "396a641eb833e6be1405f2b094875fa9f146455d722b57e6fce667eb40caef29"
     },
     {
       "path": "src/DesktopClient/ClientTransport.h",
-      "kind": "untracked",
+      "kind": "file",
       "sha256": "5b1161fd6a14bcef299edb969d341b26e610dbd7bda127bfca8ec1b8cdcaf4df"
     },
     {
       "path": "src/DesktopClient/DesktopClient.vcxproj",
       "kind": "file",
-      "sha256": "dcebbf4a5e7a7425b9753dc6d05fef14983e60101cd05920a8ad4a4533ebd6d3"
+      "sha256": "434243cd9bf0ee63cd608a5724c6bef860b5b4c813e909b6b4e7d446bf547af2"
     },
     {
       "path": "src/DesktopClient/main.cpp",
       "kind": "file",
-      "sha256": "a50428c7856df585cc280c1f0be171261c19cdb27423ec44f2868e032ca4abf6"
+      "sha256": "656733d54b01c5fede7e3cb03348a1354848b6852c0d00462fd1463524b22c1d"
     },
     {
       "path": "src/NativeRules/NativeRules.cpp",
@@ -352,12 +362,12 @@
     {
       "path": "tests/NativeRulesTests/NativeRulesTests.vcxproj",
       "kind": "file",
-      "sha256": "2a9e6a4f4ca48cd2f0e25780fcb3b0d797039e73ba3cc19041716dd3bb961dbf"
+      "sha256": "2c56eba731cb5e20ba3e99d66c7ec64f4751a4d3506c7cb6ce90ee695cc60199"
     },
     {
       "path": "tests/NativeRulesTests/main.cpp",
       "kind": "file",
-      "sha256": "4ae9830be0f42b51d89b04b62875195dbad4f7975690146e7847eece70d22a93"
+      "sha256": "dac93484e9f8d9199d6b088dd69cda7e79f56ddb0b10bab1b8a37a5398855391"
     }
   ]
 }

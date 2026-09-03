@@ -275,9 +275,11 @@ It returns `409 CAPABILITY_STALE` when the supplied configuration version is sta
 server decision is Legacy. Completed decisions never write workflow, idempotency, or business-audit
 records; PostgreSQL still makes the final decision when `/api/v1/checkouts` is called.
 
-The desktop now parses its Legacy endpoint and optional Connected endpoint from external settings.
-All product calls still use Legacy until the later capability router is implemented. Supported
-process environment variables are:
+The desktop parses its Legacy endpoint and optional Connected endpoint from external settings. If
+Connected is configured, it requests an authenticated capability and uses the Connected endpoint
+only while a current schema 1 `compare` or `service` response is cached. Missing, malformed,
+unsupported, future-dated, expired, disabled, or failed capability responses select Legacy.
+Supported process environment variables are:
 
 | Variable | Default or rule |
 |---|---|

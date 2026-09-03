@@ -7,6 +7,7 @@
 #include <iostream>
 #include "../../src/NativeRules/NativeRules.h"
 #include "../../src/DesktopClient/ClientTransport.h"
+#include "../../src/DesktopClient/CapabilityRouter.h"
 static_assert(NR_ALLOWED == 0, "version 1 allowed reason changed");
 static_assert(NR_INACTIVE == 1, "version 1 inactive reason changed");
 static_assert(NR_OVERDUE == 2, "version 1 overdue reason changed");
@@ -154,10 +155,57 @@ static void checkTransportConfiguration()
     DeleteFileW(credentialPath);
 }
 
+// Exercises the complete capability truth table without network access or workflow writes.
+static void checkCapabilityRouting()
+{
+    ClientEndpointConfiguration configuration;
+    configuration.legacy.host = L"legacy";
+    configuration.connected.host = L"connected";
+    configuration.connected.secure = true;
+    configuration.hasConnected = true;
+    EndpointRouter router(configuration);
+    const std::time_t now = 1788451200; // 2026-09-03T16:00:00Z
+    const std::string prefix = "{\"schemaVersion\":1,\"configurationVersion\":\"v1\","
+                               "\"evaluatedAt\":\"2026-09-03T15:59:50Z\","
+                               "\"expiresAt\":\"2026-09-03T16:00:30Z\",\"connectedEnabled\":true,"
+                               "\"checkoutRuleMode\":\"";
+    check(router.Mode(now) == ClientRuleMode::Legacy, "absent capability selects Legacy");
+    check(router.Accept(prefix + "compare\",\"reason\":\"ENABLED\"}", now),
+          "compare capability accepted");
+    check(router.Mode(now) == ClientRuleMode::Compare, "compare selects Connected");
+    check(router.Endpoint(now).host == L"connected", "compare endpoint is Connected");
+    check(router.Mode(now + 30) == ClientRuleMode::Legacy, "expiry restores Legacy");
+    check(router.Accept(prefix + "service\",\"reason\":\"ENABLED\"}", now),
+          "service capability accepted");
+    check(router.Mode(now) == ClientRuleMode::Service, "service selects Connected");
+    check(!router.Accept(prefix + "legacy\",\"reason\":\"LEGACY\"}", now),
+          "Legacy response cannot select Connected");
+    check(!router.Accept(prefix + "compare\",\"connectedEnabled\":false}", now),
+          "duplicate parent field rejected");
+    check(!router.Accept("{\"schemaVersion\":2}", now), "unsupported schema selects Legacy");
+    check(!router.Accept("not-json", now), "malformed capability selects Legacy");
+    check(!router.Accept("{\"schemaVersion\":1,\"configurationVersion\":\"v1\","
+                         "\"evaluatedAt\":\"2026-09-03T15:59:00Z\","
+                         "\"expiresAt\":\"2026-09-03T15:59:59Z\",\"connectedEnabled\":true,"
+                         "\"checkoutRuleMode\":\"service\"}",
+                         now),
+          "stale capability selects Legacy");
+    check(!router.Accept("{\"schemaVersion\":1,\"configurationVersion\":\"v1\","
+                         "\"evaluatedAt\":\"2026-09-03T16:00:01Z\","
+                         "\"expiresAt\":\"2026-09-03T16:00:30Z\",\"connectedEnabled\":true,"
+                         "\"checkoutRuleMode\":\"service\"}",
+                         now),
+          "future evaluation selects Legacy");
+    configuration.hasConnected = false;
+    EndpointRouter unconfigured(configuration);
+    check(unconfigured.Mode(now) == ClientRuleMode::Legacy, "unconfigured client preserves Legacy");
+}
+
 // Runs every native rule and client transport contract check.
 int main()
 {
     checkTransportConfiguration();
+    checkCapabilityRouting();
     check(CheckoutLimit(L"STANDARD") == 2, "standard limit");
     check(CheckoutLimit(L"SUPPORTER") == 5, "supporter limit");
     check(CheckoutLimit(L"STAFF") == 10, "staff limit");

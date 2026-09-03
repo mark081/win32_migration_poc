@@ -45,10 +45,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CapabilityRouter.cpp" />
     <ClCompile Include="ClientTransport.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CapabilityRouter.h" />
     <ClInclude Include="ClientTransport.h" />
   </ItemGroup>
   <ItemGroup>

@@ -214,7 +214,8 @@ ClientHttpResult SendAttempt(const ClientEndpointConfiguration &configuration,
         return result;
     }
 
-    std::wstring headers = L"X-Api-Key: " + apiKey + L"\r\nX-Actor: legacy.desktop\r\n";
+    std::wstring headers =
+        L"X-Api-Key: " + apiKey + L"\r\nX-Actor: legacy.desktop\r\nX-Client-Version: 1.0.0\r\n";
     if (!key.empty())
         headers += L"Idempotency-Key: " + key + L"\r\n";
     if (!body.empty())

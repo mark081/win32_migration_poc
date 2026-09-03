@@ -14,10 +14,10 @@ sources:
   - resource: repo://AGENTS.md
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T23:45:00+00:00
+  at: 2026-09-03T21:05:00+00:00
 status: draft
-source_revision: f53a98427070af5f64bdce85b015fc66ca863210
-source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
+source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
+source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
 source_worktree: dirty
 curation_status: generated
 ---

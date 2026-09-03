@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-02T23:45:00+00:00
+  at: 2026-09-03T21:05:00+00:00
 status: draft
-source_revision: f53a98427070af5f64bdce85b015fc66ca863210
-source_fingerprint: 120f1a554cacbd7eaac6ef03c18228d1cbdd20d65d0e01b22a22c629dd4c2a7b
+source_revision: 17904f336dcb6b9e39221e28bb80a3a0860fc752
+source_fingerprint: 019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4
 source_worktree: dirty
 curation_status: generated
 ---
@@ -77,3 +77,19 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
   `ClientTransport.h`; modified the application/client/test projects, UI entry point, focused/API
   tests, README, and architecture documentation. Reconciled fingerprint:
   `03f5d984f90e6165e528dd9797b210af9be4925f02a51cfdb8dc2b55f7f3d4fc`.
+
+## Wave 6 update disposition
+
+- Revised: system overview, runtime components, API interface, build/test operations, and hotspots
+  for the new process-local capability cache and endpoint router.
+- Unchanged after verification: Connected feature-gate policy, data ownership, constraints,
+  glossary, and open questions. The router changes transient endpoint selection only; it adds no
+  durable data, business authorization, database call, provider policy, term, or unresolved design
+  decision.
+- Graph refresh: `graphify update .` rebuilt 826 nodes and 1,556 edges. The existing
+  `NativeRules.h` partial-extraction warning remains and direct source/test evidence still covers it.
+- Pre-update manifest diff: added `CapabilityRouter.cpp` and `.h`; modified the desktop transport,
+  entry point, client/test projects, native harness, README, and architecture documentation. The
+  previously reconciled Wave 5 checkout-decision and transport paths were also present because its
+  manifest sidecar still identified the pre-Wave-5 commit. Reconciled fingerprint:
+  `019debc291402cec69724d410e6f848cb52d07394f8bf82c5a4cb3432c2fa2e4`.
