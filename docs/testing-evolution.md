@@ -188,6 +188,8 @@ Retain all Legacy suites and add:
 - Configuration tests proving secrets and endpoint addresses are externalized.
 - Tests proving the practice-shared Legacy credential can be retired without silently falling back.
 - UI tests proving connected failures are understandable and do not corrupt local state.
+- Client harness checks proving service mode bypasses NativeRules and member policy fields, accepts
+  only the versioned service reason table, and maps every stable denial to safe operator text.
 - Performance baselines for representative read and write operations over the network.
 
 Promotion criterion: the same input dataset and workflow matrix produce equivalent API outcomes,

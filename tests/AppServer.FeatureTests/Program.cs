@@ -60,6 +60,7 @@ namespace ToolLending.AppServer.FeatureTests
                 CapabilityApiRejectsUnsafeVersions
             );
             Run("checkout decision uses service result in service mode", DecisionUsesServiceResult);
+            Run("checkout decision maps every service result", DecisionMapsEveryServiceResult);
             Run(
                 "checkout decision preserves Legacy result in compare mode",
                 DecisionPreservesLegacyResult
@@ -866,6 +867,82 @@ namespace ToolLending.AppServer.FeatureTests
             Equal(CheckoutDecisionReasons.Allowed, response.Reason);
             Equal(0, telemetry.RuleComparisons.Count);
             Equal(2, telemetry.FlagEvaluations.Count);
+        }
+
+        // Proves the service-mode contract returns every stable allow/deny reason without a Legacy
+        // observation or comparison side effect.
+        private static void DecisionMapsEveryServiceResult()
+        {
+            var today = new DateTime(2026, 9, 2);
+            AssertServiceDecision(
+                null,
+                today.AddDays(1),
+                false,
+                CheckoutDecisionReasons.MemberNotFound
+            );
+            AssertServiceDecision(
+                Member("STANDARD", false, false, 0, 2, 7),
+                today.AddDays(1),
+                false,
+                CheckoutDecisionReasons.MemberInactive
+            );
+            AssertServiceDecision(
+                Member("UNKNOWN", true, false, 0, 0, 0),
+                today.AddDays(1),
+                false,
+                CheckoutDecisionReasons.TierUnsupported
+            );
+            AssertServiceDecision(
+                Member("STANDARD", true, true, 0, 2, 7),
+                today.AddDays(1),
+                false,
+                CheckoutDecisionReasons.Overdue
+            );
+            AssertServiceDecision(
+                Member("STANDARD", true, false, 2, 2, 7),
+                today.AddDays(1),
+                false,
+                CheckoutDecisionReasons.CheckoutLimitReached
+            );
+            AssertServiceDecision(
+                Member("STANDARD", true, false, 0, 2, 7),
+                today.AddDays(8),
+                false,
+                CheckoutDecisionReasons.DueDateInvalid
+            );
+            AssertServiceDecision(
+                Member("STANDARD", true, false, 0, 2, 7),
+                today.AddDays(1),
+                true,
+                CheckoutDecisionReasons.Allowed
+            );
+        }
+
+        // Runs one service-mode decision row and verifies no comparison evidence was produced.
+        private static void AssertServiceDecision(
+            MemberEligibilityContext member,
+            DateTime dueOn,
+            bool allowed,
+            string reason
+        )
+        {
+            var telemetry = new InMemoryConnectedTelemetrySink();
+            var service = new CheckoutDecisionService(
+                new FixedEvaluator(Capability(true, CheckoutRuleMode.Service, "SERVICE")),
+                (memberId, businessDate) => member,
+                new CheckoutRuleEvaluator(),
+                new FixedBusinessDateClock(new DateTime(2026, 9, 2)),
+                telemetry
+            );
+            var request = DecisionRequest();
+            request.DueOn = dueOn;
+
+            var response = service.Decide(request, Guid.NewGuid());
+
+            Equal("service", response.EffectiveMode);
+            Equal(allowed, response.Allowed);
+            Equal(reason, response.Reason);
+            Equal(0, telemetry.RuleComparisons.Count);
         }
 
         // Proves Compare mode reports the Legacy result while recording the service mismatch.

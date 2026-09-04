@@ -6,10 +6,10 @@ sources:
   - resource: repo://.
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T22:04:44+00:00
+  at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
-source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
+source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
+source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
 source_worktree: dirty
 curation_status: generated
 ---
@@ -106,3 +106,20 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
 - Pre-update manifest diff: added `CheckoutMode.cpp` and `.h`; modified capability cache access,
   desktop checkout flow, client/test projects, native and FlaUI harnesses, README, and architecture docs.
   Reconciled fingerprint: `5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e`.
+
+## Wave 8 update disposition
+
+- Revised: system overview, runtime components, API interface, data ownership, build/test
+  operations, and hotspots for service-mode checkout routing, stable decision handling, and the
+  rolled-back serialization-conflict mapping.
+- Unchanged after verification: Connected feature-gate policy, constraints, glossary, and open
+  questions. Service mode remains beneath the existing parent/child gate, changes no durable owner
+  or database routine, adds no dependency, and keeps PostgreSQL as the final checkout writer.
+- Graph refresh: `graphify update .` rebuilt 860 nodes and 1,676 edges. The existing
+  `NativeRules.h` partial-extraction warning remains and direct source/test evidence covers it.
+- Pre-update manifest diff: modified the desktop checkout helpers and entry point, controller error
+  mapping, native/feature/FlaUI tests, README, architecture/testing documentation, and the UI
+  launcher's synthetic local credential. Release, focused, and full non-UI verification passed;
+  an active unlocked RDP run passed all 9 FlaUI tests after the documented synthetic-data reset.
+  Reconciled fingerprint:
+  `b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38`.

@@ -231,12 +231,79 @@ static void checkCompareCheckout()
           "compare request cannot submit checkout command");
 }
 
+// Proves service mode bypasses NativeRules, sends no client policy observation, and accepts only
+// the versioned service reason table used for operator feedback.
+static void checkServiceCheckout()
+{
+    check(RequiresNativeCheckoutDecision(ClientRuleMode::Legacy), "Legacy mode calls NativeRules");
+    check(RequiresNativeCheckoutDecision(ClientRuleMode::Compare),
+          "compare mode calls NativeRules");
+    check(!RequiresNativeCheckoutDecision(ClientRuleMode::Service),
+          "service mode bypasses NativeRules");
+
+    const std::string request =
+        BuildServiceDecisionRequest(L"7", L"2026-09-05", L"configuration-1");
+    check(request.find("\"memberId\":7") != std::string::npos, "service request contains member");
+    check(request.find("legacyObservation") == std::string::npos,
+          "service request contains no native observation");
+    check(request.find("active") == std::string::npos &&
+              request.find("openLoans") == std::string::npos &&
+              request.find("tier") == std::string::npos,
+          "service request contains no member policy fields");
+    check(request.find("idempotency") == std::string::npos &&
+              request.find("toolId") == std::string::npos,
+          "service decision cannot submit a checkout command");
+
+    const wchar_t *denials[] = {L"MEMBER_NOT_FOUND", L"MEMBER_INACTIVE",
+                                L"OVERDUE",          L"CHECKOUT_LIMIT_REACHED",
+                                L"DUE_DATE_INVALID", L"TIER_UNSUPPORTED"};
+    check(IsValidServiceDecision(1, L"service", true, L"ALLOWED", L"configuration-1",
+                                 L"configuration-1"),
+          "service allow accepted");
+    for (const wchar_t *reason : denials)
+    {
+        check(IsValidServiceDecision(1, L"service", false, reason, L"configuration-1",
+                                     L"configuration-1"),
+              "stable service denial accepted");
+        check(ServiceDecisionMessage(reason) != nullptr, "stable service denial has UI text");
+    }
+    check(std::wstring(ServiceDecisionMessage(L"MEMBER_NOT_FOUND")) == L"The member was not found.",
+          "member-not-found message is stable");
+    check(std::wstring(ServiceDecisionMessage(L"OVERDUE")) ==
+              L"The member must return overdue tools before another checkout.",
+          "overdue message is stable");
+    check(!IsValidServiceDecision(1, L"service", false, L"ALLOWED", L"configuration-1",
+                                  L"configuration-1"),
+          "contradictory service allow rejected");
+    check(!IsValidServiceDecision(1, L"service", true, L"OVERDUE", L"configuration-1",
+                                  L"configuration-1"),
+          "contradictory service denial rejected");
+    check(!IsValidServiceDecision(1, L"compare", true, L"ALLOWED", L"configuration-1",
+                                  L"configuration-1"),
+          "non-service response rejected");
+    check(!IsValidServiceDecision(2, L"service", true, L"ALLOWED", L"configuration-1",
+                                  L"configuration-1"),
+          "unsupported service contract rejected");
+    check(!IsValidServiceDecision(1, L"service", true, L"ALLOWED", L"stale", L"configuration-1"),
+          "stale service configuration rejected");
+    check(ServiceDecisionMessage(L"UNKNOWN") == nullptr, "unknown service reason has no UI text");
+    check(IsPositiveCheckoutId(L"1") && IsPositiveCheckoutId(L"2147483647"),
+          "positive checkout IDs accepted");
+    check(!IsPositiveCheckoutId(L"0") && !IsPositiveCheckoutId(L"1x") &&
+              !IsPositiveCheckoutId(L"2147483648"),
+          "invalid checkout IDs rejected");
+    check(IsCheckoutDate(L"2026-09-05"), "calendar checkout date accepted");
+    check(!IsCheckoutDate(L"2026-02-29") && !IsCheckoutDate(L"2026/09/05"),
+          "invalid checkout dates rejected");
+}
+
 // Runs every native rule and client transport contract check.
 int main()
 {
     checkTransportConfiguration();
     checkCapabilityRouting();
     checkCompareCheckout();
+    checkServiceCheckout();
     check(CheckoutLimit(L"STANDARD") == 2, "standard limit");
     check(CheckoutLimit(L"SUPPORTER") == 5, "supporter limit");
     check(CheckoutLimit(L"STAFF") == 10, "staff limit");

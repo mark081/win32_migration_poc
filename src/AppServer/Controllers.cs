@@ -43,6 +43,9 @@ namespace ToolLending.AppServer
             return g;
         }
 
+        // Runs one idempotent database command and maps expected transactional failures to stable
+        // public categories. PostgreSQL owns rollback; a serialization abort commits no partial
+        // state and is reported as a retryable conflict rather than an unexpected server failure.
         protected IHttpActionResult Write(Func<Guid, Guid, WriteResult> f)
         {
             var request = Guid.NewGuid();
@@ -51,6 +54,18 @@ namespace ToolLending.AppServer
             try
             {
                 return Ok(f(request, idempotencyKey));
+            }
+            catch (PostgresException e) when (e.SqlState == "40001")
+            {
+                return Content(
+                    HttpStatusCode.Conflict,
+                    new
+                    {
+                        code = "CONCURRENT_UPDATE",
+                        message = "The operation conflicted with another update.",
+                        requestId = request,
+                    }
+                );
             }
             catch (PostgresException e) when (e.SqlState.StartsWith("TL"))
             {

@@ -11,13 +11,15 @@ sources:
   - resource: repo://src/AppServer/Repository.cs#L272-L321
   - resource: repo://src/AppServer/CheckoutRules.cs#L91-L153
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L136-L291
+  - resource: repo://src/AppServer/Controllers.cs#L49-L83
+  - resource: repo://src/DesktopClient/main.cpp#L394-L446
   - resource: repo://AGENTS.md
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T22:04:44+00:00
+  at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
-source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
+source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
+source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
 source_worktree: dirty
 curation_status: generated
 ---
@@ -33,6 +35,7 @@ The existing PostgreSQL database is the sole durable owner of tools, members, re
 - Tier limits and maximum durations are functions in PostgreSQL and duplicated in `NativeRules.dll` for client prechecks ([002_routines.sql:3](../../../database/002_routines.sql#L3), [NativeRules.cpp:9](../../../src/NativeRules/NativeRules.cpp#L9)).
 - The service can now read those PostgreSQL tier values with member open/overdue-loan facts and calculate a side-effect-free presentation decision ([Repository.cs:272](../../../src/AppServer/Repository.cs#L272), [CheckoutRules.cs:117](../../../src/AppServer/CheckoutRules.cs#L117)). This read performs no workflow, idempotency, or audit write and does not replace checkout transaction validation.
 - The checkout-decision API now calls that read/evaluator path for permitted compare/service modes. Tests fingerprint every workflow, idempotency, and audit table before and after a completed decision; ownership and stored-routine validation remain unchanged ([CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136)).
+- A service-mode allow is advisory: the desktop still submits the unchanged idempotent checkout command only after confirmation, and PostgreSQL revalidates current state before committing. A concurrent serialization abort commits no partial state and is exposed as the existing HTTP conflict category ([main.cpp:394](../../../src/DesktopClient/main.cpp#L394), [Controllers.cs:49](../../../src/AppServer/Controllers.cs#L49)).
 
 ## Durable constraint
 

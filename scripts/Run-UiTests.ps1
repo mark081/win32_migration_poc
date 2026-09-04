@@ -13,7 +13,7 @@ if (-not (Test-Path $client)) {
 
 $credentialDirectory = Join-Path $env:TEMP ("ToolLending.UiTests." + [Guid]::NewGuid())
 $credentialFile = Join-Path $credentialDirectory 'client.credential'
-$testCredential = 'ui-test-shared-key-do-not-display'
+$testCredential = 'demo-local-key'
 
 try {
     New-Item -ItemType Directory -Path $credentialDirectory -Force | Out-Null

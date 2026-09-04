@@ -163,6 +163,25 @@ public sealed class DesktopClientTests
         dialog.FindFirstDescendant(cf => cf.ByName("OK"))?.AsButton().Invoke();
     }
 
+    // Confirms malformed identifiers are stopped before either rule implementation or HTTP path.
+    [Test]
+    public void CheckoutWithInvalidIdentifierShowsValidationMessage()
+    {
+        Find(MemberId).AsTextBox().Text = "not-an-id";
+        Find(ToolId).AsTextBox().Text = "1";
+        Find(DueDate).AsTextBox().Text = "2026-09-05";
+        Find(CheckOut).AsButton().Invoke();
+
+        var dialog = WaitForModalWindow();
+        Assert.That(
+            dialog.FindFirstDescendant(cf =>
+                cf.ByName("Enter positive Member and Tool IDs and a due date in YYYY-MM-DD format.")
+            ),
+            Is.Not.Null
+        );
+        dialog.FindFirstDescendant(cf => cf.ByName("OK"))?.AsButton().Invoke();
+    }
+
     // Confirms the Legacy/compare migration retains operator confirmation and that cancellation
     // produces no success output or checkout request. The database remains the final writer.
     [Test]

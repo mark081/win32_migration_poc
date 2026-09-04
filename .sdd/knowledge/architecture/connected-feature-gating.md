@@ -16,10 +16,10 @@ sources:
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L90-L390
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T22:04:44+00:00
+  at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
-source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
+source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
+source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
 source_worktree: dirty
 curation_status: generated
 ---

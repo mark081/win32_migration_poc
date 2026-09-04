@@ -126,16 +126,22 @@ static bool LoadLegacyCredential(std::wstring &error)
     credentialMode = L"Legacy shared credential file: " + path;
     return true;
 }
-// Refreshes the short-lived service capability when needed and sends the request through the
-// resulting endpoint. Missing, failed, unsupported, or expired capability state selects Legacy.
-static std::wstring Http(const wchar_t *verb, const std::wstring &path,
-                         const std::string &body = "", const std::wstring &key = L"")
+// Refreshes the short-lived service capability when needed and returns the structured transport
+// result from the selected endpoint. Missing or unsafe capability state selects Legacy.
+static ClientHttpResult RoutedHttp(const wchar_t *verb, const std::wstring &path,
+                                   const std::string &body = "", const std::wstring &key = L"")
 {
     const std::time_t now = ClientUtcNow();
     endpointRouter->Refresh(now);
-    return FormatClientHttpResult(SendClientHttp(endpointConfiguration,
-                                                 endpointRouter->Endpoint(now), verb, path,
-                                                 endpointRouter->ApiKey(now, apiKey), body, key));
+    return SendClientHttp(endpointConfiguration, endpointRouter->Endpoint(now), verb, path,
+                          endpointRouter->ApiKey(now, apiKey), body, key);
+}
+
+// Preserves the existing text-based HTTP behavior for workflows that do not inspect failures.
+static std::wstring Http(const wchar_t *verb, const std::wstring &path,
+                         const std::string &body = "", const std::wstring &key = L"")
+{
+    return FormatClientHttpResult(RoutedHttp(verb, path, body, key));
 }
 
 static std::wstring Text(HWND h)
@@ -204,6 +210,43 @@ static NativeCheckoutObservation CompareCheckout(const std::wstring &member,
         return native;
     }
     return {allowed, Utf8(reason)};
+}
+
+// Requests the service-owned eligibility result without reading member policy fields or invoking
+// NativeRules. A transport or contract failure stops this attempt and cannot be reported as a
+// denial, an allow, or checkout success.
+static bool ServiceCheckout(const std::wstring &member, const std::wstring &due, bool &allowed,
+                            std::wstring &reason)
+{
+    const std::time_t now = ClientUtcNow();
+    const std::wstring expectedConfiguration = endpointRouter->ConfigurationVersion(now);
+    const std::string body = BuildServiceDecisionRequest(member, due, expectedConfiguration);
+    const ClientHttpResult result = RoutedHttp(L"POST", L"/api/v1/checkout-decisions", body);
+    if (result.failure != TransportFailure::None)
+    {
+        endpointRouter->Invalidate();
+        const std::wstring message = L"Checkout decision failed: " +
+                                     FormatClientHttpResult(result) +
+                                     L". No checkout has been completed.";
+        MessageBox(nullptr, message.c_str(), L"Checkout decision", MB_ICONWARNING);
+        return false;
+    }
+
+    const std::wstring response = Wide(result.body);
+    allowed = JsonBool(response, L"allowed");
+    reason = JsonString(response, L"reason");
+    if (!IsValidServiceDecision(
+            JsonInt(response, L"contractVersion"), JsonString(response, L"effectiveMode"), allowed,
+            reason, JsonString(response, L"configurationVersion"), expectedConfiguration))
+    {
+        endpointRouter->Invalidate();
+        MessageBox(nullptr,
+                   L"The checkout decision response was not valid. No checkout has been "
+                   L"completed.",
+                   L"Checkout decision", MB_ICONWARNING);
+        return false;
+    }
+    return true;
 }
 static std::string JsonEscape(const std::wstring &value)
 {
@@ -344,10 +387,10 @@ static void AddTool()
     SetWindowText(toolResultBox,
                   PrettyJson(Http(L"POST", L"/api/v1/tools", body, NewGuid())).c_str());
 }
-// Runs the Legacy or compare checkout flow while PostgreSQL remains the final writer. Compare mode
-// sends one native observation for shadow evaluation and still submits at most one command after
-// confirmation. NativeRules remains removable only after the migration gate. Scenarios: LOAN-001,
-// LOAN-002, LOAN-003, and UI-001.
+// Runs the gated Legacy, compare, or service checkout flow while PostgreSQL remains the final
+// writer. Service mode bypasses NativeRules and member policy fields; every mode retains operator
+// confirmation and one idempotent command. NativeRules remains until a later approved retirement.
+// Scenarios: LOAN-001, LOAN-002, LOAN-003, and UI-001.
 static void Checkout()
 {
     auto member = Text(memberBox), tool = Text(toolBox), due = Text(dueBox);
@@ -357,20 +400,40 @@ static void Checkout()
                    MB_ICONWARNING);
         return;
     }
-    auto m = Http(L"GET", L"/api/v1/members/" + member);
-    const NativeCheckoutObservation native =
-        ObserveNativeCheckout(JsonBool(m, L"active"), JsonBool(m, L"hasOverdueLoan"),
-                              JsonInt(m, L"openLoans"), JsonString(m, L"tier"));
-    const std::time_t now = ClientUtcNow();
-    const NativeCheckoutObservation effective = endpointRouter->Mode(now) == ClientRuleMode::Compare
-                                                    ? CompareCheckout(member, due, native)
-                                                    : native;
-    if (!effective.allowed)
+    if (!IsPositiveCheckoutId(member) || !IsPositiveCheckoutId(tool) || !IsCheckoutDate(due))
     {
         MessageBox(nullptr,
-                   L"Native business rules say this member is not eligible. The database will "
-                   L"independently enforce the rule.",
-                   L"Eligibility", MB_ICONWARNING);
+                   L"Enter positive Member and Tool IDs and a due date in YYYY-MM-DD format.",
+                   L"Validation", MB_ICONWARNING);
+        return;
+    }
+    const std::time_t now = ClientUtcNow();
+    endpointRouter->Refresh(now);
+    const ClientRuleMode mode = endpointRouter->Mode(now);
+    bool allowed = false;
+    std::wstring serviceReason;
+    if (RequiresNativeCheckoutDecision(mode))
+    {
+        const std::wstring memberResponse = Http(L"GET", L"/api/v1/members/" + member);
+        const NativeCheckoutObservation native = ObserveNativeCheckout(
+            JsonBool(memberResponse, L"active"), JsonBool(memberResponse, L"hasOverdueLoan"),
+            JsonInt(memberResponse, L"openLoans"), JsonString(memberResponse, L"tier"));
+        const NativeCheckoutObservation effective =
+            mode == ClientRuleMode::Compare ? CompareCheckout(member, due, native) : native;
+        allowed = effective.allowed;
+    }
+    else if (!ServiceCheckout(member, due, allowed, serviceReason))
+    {
+        return;
+    }
+
+    if (!allowed)
+    {
+        const wchar_t *message = mode == ClientRuleMode::Service
+                                     ? ServiceDecisionMessage(serviceReason)
+                                     : L"Native business rules say this member is not eligible. "
+                                       L"The database will independently enforce the rule.";
+        MessageBox(nullptr, message, L"Eligibility", MB_ICONWARNING);
         return;
     }
     std::string body = "{\"toolId\":" + Utf8(tool) + ",\"memberId\":" + Utf8(member) +

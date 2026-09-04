@@ -110,8 +110,9 @@ The seeded API key, `demo-local-key`, and default database password are intentio
 
 `src/DesktopClient` contains the Win32 executable. Its Lending, Add user, and Add tool tabs validate
 operator input, show generated record IDs, request confirmation, load member/tool information,
-invoke native eligibility checks, and call the service with WinHTTP. It never connects directly to
-PostgreSQL and never accepts operator-supplied database IDs for new records.
+invoke native eligibility checks in Legacy/compare mode, request a service decision in service
+mode, and call the service with WinHTTP. It never connects directly to PostgreSQL and never accepts
+operator-supplied database IDs for new records.
 
 ### Native rules library
 
@@ -132,12 +133,12 @@ Rules are intentionally distributed to reproduce a common legacy maintenance pro
 | Rule | Desktop UI | Native DLL | Service | PostgreSQL |
 |---|---:|---:|---:|---:|
 | Required fields and date shape | Primary | | DTO validation | |
-| Tier checkout limit | Display | Precheck | Loads member state | **Authoritative** |
-| Maximum loan duration | Display | Precheck | Pass-through | **Authoritative** |
+| Tier checkout limit | Display | Legacy/compare precheck | Service-mode decision | **Authoritative** |
+| Maximum loan duration | Display | Legacy/compare regression | Service-mode decision | **Authoritative** |
 | API authorization | | | **Authoritative** | |
 | Idempotent writes | | | Coordinates and hashes request | Unique durable record |
 | Tool availability and conflicts | Display only | | Error translation | **Authoritative with locks** |
-| Overdue-member block | Warning | Precheck | Loads member status | **Authoritative** |
+| Overdue-member block | Warning | Legacy/compare precheck | Service-mode decision | **Authoritative** |
 | Late-fee calculation | Displays result | | Orchestrates return | **Authoritative** |
 | Audit trail | | | Supplies actor and request ID | **Authoritative insert** |
 
@@ -270,6 +271,10 @@ Write endpoints also require a UUID in `Idempotency-Key`. Reusing the same key w
 
 Expected database failures use stable `TLxxx` SQLSTATE codes. The API maps authentication failures to `401`, validation failures to `400`, missing records to `404`, business conflicts to `409`, and unexpected failures to `500` with a correlation/request ID.
 
+A PostgreSQL serializable-transaction abort (`40001`) is also returned as HTTP `409` with stable
+code `CONCURRENT_UPDATE`. PostgreSQL has already rolled back that attempt, so the client reports a
+conflict and does not create an unrelated retry or second write.
+
 The decision endpoint re-evaluates `connected.enabled` and the checkout child mode on every call.
 It returns `409 CAPABILITY_STALE` when the supplied configuration version is stale or the current
 server decision is Legacy. Completed decisions never write workflow, idempotency, or business-audit
@@ -302,6 +307,14 @@ Legacy-effective result while the service records normalized evidence. A compari
 the operator and retains the Legacy decision; it does not submit a second command or report the
 decision as checkout success. Confirmation still precedes the single idempotent checkout command,
 and PostgreSQL still makes the final transactional decision.
+
+In service mode, checkout sends member and due-date input directly to the read-only decision route;
+it does not fetch member policy fields or call NativeRules. Only a current version 1 `service`
+response with a known reason can continue. Denials map to operator-safe messages, while transport,
+stale, malformed, and contradictory responses stop without showing success. An allow still requires
+operator confirmation before the unchanged idempotent checkout command, and PostgreSQL can reject
+that command if state changed after the decision. Disabling or invalidating the parent/child
+capability returns subsequent attempts to the retained Legacy path.
 
 ## Build and run
 

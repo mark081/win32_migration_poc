@@ -5,7 +5,7 @@ description: Current responsibilities of the Win32 client, NativeRules DLL, appl
 resource: repo://src/
 tags: [client, native-rules, app-server, database]
 sources:
-  - resource: repo://src/DesktopClient/main.cpp#L313-L387
+  - resource: repo://src/DesktopClient/main.cpp#L218-L446
   - resource: repo://src/NativeRules/NativeRules.cpp#L5-L28
   - resource: repo://src/AppServer/Controllers.cs#L121-L227
   - resource: repo://src/AppServer/Repository.cs#L174-L216
@@ -17,16 +17,16 @@ sources:
   - resource: repo://src/AppServer/CheckoutDecisions.cs#L44-L390
   - resource: repo://src/DesktopClient/ClientTransport.cpp#L57-L354
   - resource: repo://src/DesktopClient/CapabilityRouter.cpp#L117-L188
-  - resource: repo://src/DesktopClient/CheckoutMode.cpp#L36-L74
+  - resource: repo://src/DesktopClient/CheckoutMode.cpp#L36-L141
   - resource: repo://src/NativeRules/NativeRules.h#L8-L26
   - resource: repo://database/002_routines.sql#L3-L56
   - resource: repo://docs/architecture.md#L26-L54
 generated:
   by: analyze-brownfield-context/1.0
-  at: 2026-09-03T22:04:44+00:00
+  at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: c02893fb2fbaf460282c8d6fa4da3ef6f4b5c164
-source_fingerprint: 5c9a61f0a37d9c8b8be61b6ae0208c38d7bb4bfc132744a2d45b8f448229e28e
+source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
+source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
 source_worktree: dirty
 curation_status: generated
 ---
@@ -37,10 +37,10 @@ Business behavior is deliberately distributed. Client and DLL checks provide imm
 
 ## Responsibilities
 
-- **Win32 client:** collects values, enforces required-field and numeric-shape checks, asks for confirmation, renders responses, and constructs API requests. It still makes the Legacy checkout-eligibility decision. When Connected is configured, a process-local router fetches the authenticated capability, accepts only current schema 1 `compare` or `service` responses, and otherwise sends product calls to Legacy. The transport retains separate endpoint credentials, bounded timeouts, and normal TLS validation ([main.cpp:130](../../../src/DesktopClient/main.cpp#L130), [CapabilityRouter.cpp:124](../../../src/DesktopClient/CapabilityRouter.cpp#L124), [CapabilityRouter.cpp:137](../../../src/DesktopClient/CapabilityRouter.cpp#L137)).
-  In compare mode, the client calls the structured native rule once, sends that observation to the read-only decision route, and uses a valid Legacy-effective response. Comparison failure warns and retains the native result; confirmation still gates one existing checkout command ([CheckoutMode.cpp:36](../../../src/DesktopClient/CheckoutMode.cpp#L36), [main.cpp:186](../../../src/DesktopClient/main.cpp#L186), [main.cpp:350](../../../src/DesktopClient/main.cpp#L350)).
+- **Win32 client:** collects values, enforces required-field and numeric/date-shape checks, asks for confirmation, renders responses, and constructs API requests. When Connected is configured, a process-local router fetches the authenticated capability, accepts only current schema 1 `compare` or `service` responses, and otherwise sends product calls to Legacy. The transport retains separate endpoint credentials, bounded timeouts, and normal TLS validation ([main.cpp:130](../../../src/DesktopClient/main.cpp#L130), [CapabilityRouter.cpp:124](../../../src/DesktopClient/CapabilityRouter.cpp#L124), [CapabilityRouter.cpp:137](../../../src/DesktopClient/CapabilityRouter.cpp#L137)).
+  Legacy and compare modes call the structured native rule once; compare also sends that observation to the read-only decision route and retains the native result on comparison failure. Service mode does not fetch member policy fields or call NativeRules. It accepts only a matching version 1 service result with a known consistent reason; failures invalidate the capability and stop the attempt. Every allow still reaches the same confirmation and at most one idempotent checkout command ([CheckoutMode.cpp:79](../../../src/DesktopClient/CheckoutMode.cpp#L79), [main.cpp:218](../../../src/DesktopClient/main.cpp#L218), [main.cpp:394](../../../src/DesktopClient/main.cpp#L394)).
 - **NativeRules DLL:** implements tier checkout limits, maximum loan durations, and eligibility from active/overdue/open-loan/tier inputs. Its versioned structured export distinguishes allowed, inactive, overdue, limit-reached, and unsupported-tier results while the legacy boolean export delegates to it ([NativeRules.h:8](../../../src/NativeRules/NativeRules.h#L8), [NativeRules.cpp:25](../../../src/NativeRules/NativeRules.cpp#L25)).
-- **Application service:** validates request DTOs, authenticates calls, coordinates idempotent transactions, calls stored routines, and translates stable database failures into HTTP responses ([Models.cs:6](../../../src/AppServer/Models.cs#L6), [Controllers.cs:46](../../../src/AppServer/Controllers.cs#L46)). The authenticated capability route returns routing metadata only. The new authenticated decision route re-evaluates that state, performs the existing read-only member query, calculates a service result, and emits compare evidence when applicable; it never submits a workflow command ([Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63), [CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136), [CheckoutDecisions.cs:322](../../../src/AppServer/CheckoutDecisions.cs#L322)).
+- **Application service:** validates request DTOs, authenticates calls, coordinates idempotent transactions, calls stored routines, and translates stable database failures into HTTP responses, including a rolled-back PostgreSQL serialization abort as `409 CONCURRENT_UPDATE` ([Models.cs:6](../../../src/AppServer/Models.cs#L6), [Controllers.cs:49](../../../src/AppServer/Controllers.cs#L49)). The authenticated capability route returns routing metadata only. The authenticated decision route re-evaluates that state, performs the existing read-only member query, calculates a service result, and emits compare evidence when applicable; it never submits a workflow command ([Capabilities.cs:63](../../../src/AppServer/Capabilities.cs#L63), [CheckoutDecisions.cs:136](../../../src/AppServer/CheckoutDecisions.cs#L136), [CheckoutDecisions.cs:322](../../../src/AppServer/CheckoutDecisions.cs#L322)).
 - **PostgreSQL:** owns tier functions and locked reservation, checkout, return, fee, audit, and durable state transitions ([002_routines.sql:3](../../../database/002_routines.sql#L3), [002_routines.sql:23](../../../database/002_routines.sql#L23), [002_routines.sql:45](../../../database/002_routines.sql#L45)).
 
 ## Ownership implication
@@ -57,4 +57,5 @@ The migration cannot switch this responsibility at deployment time. It must pres
 - `EXTRACTED`: Graphify locates the checkout-decision route, service evaluator/read dependencies, comparison telemetry, and client transport. Direct inspection verifies the decision path has no write call and the transport retains WinHTTP's default TLS validation.
 - `EXTRACTED`: Graphify locates `EndpointRouter`, its cache, the WinHTTP capability bootstrap, and the UI `Http()` routing call. Direct inspection verifies every rejected or expired response returns to Legacy.
 - `EXTRACTED`: Graphify locates the native observation adapter, compare serializer, decision call, and single checkout command call. Direct inspection verifies the decision body contains no tool ID or idempotency key.
+- `EXTRACTED`: Graphify locates the service-mode branch, request builder, response validator, stable message mapping, and unchanged checkout POST. Direct inspection verifies NativeRules and member-policy reads occur only in Legacy/compare modes.
 - `AMBIGUOUS`: Graphify could not parse `NativeRules.h` because of its export/calling-convention syntax. Direct inspection verifies the three legacy exports plus `CheckoutEligibilityReasonV1` ([NativeRules.h:17](../../../src/NativeRules/NativeRules.h#L17)).

@@ -4,7 +4,7 @@
 Win32 x86 client
   |-- Lending, Add user, and Add tool tabs
   |-- UI validation and confirmation
-  |-- NativeRules.dll (eligibility and tier limits)
+  |-- NativeRules.dll (Legacy/compare eligibility and tier limits)
   |-- practice-shared Legacy credential read from local/SMB file
   |-- externally configured Legacy endpoint and optional HTTPS Connected endpoint
   |
@@ -30,12 +30,12 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 |---|---:|---:|---:|---:|
 | Required fields/date shape | Primary | | DTO validation | |
 | Member and tool identifiers | Displays generated value | | Omits ID from create contract | Identity columns |
-| Tier checkout limit | Display | Primary precheck | Loads member state | Authoritative |
-| Maximum loan duration | Display | Primary precheck | Pass-through | Authoritative |
+| Tier checkout limit | Display | Legacy/compare precheck | Service-mode decision | Authoritative |
+| Maximum loan duration | Display | Legacy/compare regression | Service-mode decision | Authoritative |
 | API authorization | | | Authoritative | |
 | Idempotent writes | | | Coordinates key | Authoritative unique record |
 | Tool availability/conflicts | Display only | | Error translation | Authoritative with locks |
-| Overdue-member block | Warning | Eligibility precheck | Loads status | Authoritative |
+| Overdue-member block | Warning | Legacy/compare precheck | Service-mode decision | Authoritative |
 | Late fee | Display result | | Orchestration | Authoritative calculation |
 | Audit trail | | | Supplies actor/request | Authoritative insert |
 
@@ -53,6 +53,10 @@ This split is intentional. It demonstrates the maintenance and scaling constrain
 ## Failure behavior
 
 Database exceptions use stable `TLxxx` SQLSTATE codes. The API maps expected business failures to HTTP 409, validation failures to 400, authentication failures to 401, and unexpected failures to 500 with a correlation ID. A failed transaction writes no partial business state. Service restarts are safe because idempotency records live in PostgreSQL.
+
+PostgreSQL may abort one serializable transaction when concurrent callers update the same row. The
+service maps SQLSTATE `40001` to HTTP `409 CONCURRENT_UPDATE`; the database has rolled back the
+attempt, and the client presents the existing conflict category without issuing an unrelated write.
 
 The additive checkout-decision route is read-only. It evaluates current server-owned feature state,
 loads current member facts, and returns an advisory allow or deny result. Compare mode records the
@@ -75,3 +79,10 @@ sends that native result once to the read-only decision route, uses the returned
 result when valid, and warns while retaining the native result if comparison fails. Neither path
 creates more than one checkout command, and neither treats a decision response as committed
 success; the existing PostgreSQL routine remains the final writer and rule check.
+
+Service mode branches before the member-detail read and NativeRules call. The client sends only the
+member ID, due date, client version, and cached configuration version to the decision route. It
+accepts only a matching version 1 service response with a known, internally consistent reason;
+otherwise it invalidates the capability and stops the attempt. Stable denials are displayed without
+a checkout command. An allow still requires confirmation and uses the existing single idempotency
+key, so PostgreSQL can reject a race or changed condition through the existing conflict contract.
