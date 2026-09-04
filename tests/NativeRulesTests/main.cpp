@@ -156,6 +156,37 @@ static void checkTransportConfiguration()
     DeleteFileW(credentialPath);
 }
 
+// Proves every transport category has distinct operator-safe text and that failures cannot be
+// mistaken for a successful response body. HTTP status is preferred over a Win32 error number.
+static void checkFailurePresentation()
+{
+    struct FailureCase
+    {
+        TransportFailure failure;
+        DWORD status;
+        const wchar_t *text;
+    };
+    const FailureCase cases[] = {
+        {TransportFailure::Configuration, 0, L"ERROR: configuration (87)"},
+        {TransportFailure::Timeout, 504, L"ERROR: timeout (504)"},
+        {TransportFailure::Unavailable, 503, L"ERROR: service unavailable (503)"},
+        {TransportFailure::Authentication, 401, L"ERROR: authentication (401)"},
+        {TransportFailure::Authorization, 403, L"ERROR: authorization (403)"},
+        {TransportFailure::Validation, 400, L"ERROR: validation (400)"},
+        {TransportFailure::Conflict, 409, L"ERROR: conflict (409)"},
+        {TransportFailure::Unexpected, 500, L"ERROR: unexpected (500)"},
+    };
+    for (const FailureCase &item : cases)
+    {
+        ClientHttpResult result;
+        result.failure = item.failure;
+        result.statusCode = item.status;
+        result.systemError = ERROR_INVALID_PARAMETER;
+        result.body = "must-not-be-presented-as-success";
+        check(FormatClientHttpResult(result) == item.text, "transport failure has stable UI text");
+    }
+}
+
 // Exercises the complete capability truth table without network access or workflow writes.
 static void checkCapabilityRouting()
 {
@@ -301,6 +332,7 @@ static void checkServiceCheckout()
 int main()
 {
     checkTransportConfiguration();
+    checkFailurePresentation();
     checkCapabilityRouting();
     checkCompareCheckout();
     checkServiceCheckout();

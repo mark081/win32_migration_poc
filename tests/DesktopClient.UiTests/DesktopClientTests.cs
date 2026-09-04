@@ -242,7 +242,7 @@ public sealed class DesktopClientTests
             Thread.Sleep(100);
         }
 
-        throw new AssertionException("Expected validation dialog did not appear.");
+        throw new AssertionException($"Expected '{title}' dialog did not appear.");
     }
 
     private static Window WaitForMainWindow(Application app, UIA3Automation uiAutomation)

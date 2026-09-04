@@ -21,14 +21,15 @@ sources:
   - resource: repo://tests/AppServer.FeatureTests/Program.cs#L860-L1110
   - resource: repo://tests/NativeRulesTests/main.cpp#L231-L301
   - resource: repo://docs/testing-evolution.md#L47-L256
+  - resource: repo://docs/connected-operations.md#L1-L170
   - resource: repo://README.md#L274-L359
   - resource: repo://AGENTS.md#L205-L215
 generated:
   by: analyze-brownfield-context/1.0
   at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
-source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
+source_revision: e83f34f7b78525afe5ded64b61c785176c58f0c6
+source_fingerprint: 158d4ba6c2507188982256829a775edf51f7b072c2d5c8d1f8c78009445477fe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -58,6 +59,18 @@ The supported build is Windows/x86 using NuGet restore and MSBuild for the legac
 - Service-mode wave verification passed all nine FlaUI tests after the synthetic demo data was
   reset so member 1 was eligible; the cancellation test then reached confirmation and left the
   client output unchanged.
+- The cross-boundary feature matrix executes disabled, Legacy, compare, and service decisions
+  against one PostgreSQL fixture and verifies unchanged workflow, idempotency, and business-audit
+  state after each row. The native harness also verifies distinct safe text for every transport
+  failure category. These local checks complement rather than replace the environment-bound TLS,
+  parity, latency, and rollback evidence ([Program.cs](../../../tests/AppServer.FeatureTests/Program.cs),
+  [main.cpp](../../../tests/NativeRulesTests/main.cpp)).
+- The Wave 9 interactive gate ran from an active unlocked RDP desktop and passed all nine FlaUI
+  tests in two seconds with no failures or skips after the synthetic fixture reset.
+- The Connected operations guide records external service/client settings, atomic snapshot
+  replacement, redacted telemetry fields, supported client/service combinations, the default
+  60-second rollback convergence target, and exact local/Connected verification boundaries
+  ([connected-operations.md](../../../docs/connected-operations.md)).
 - UI tests should protect wiring and visible behavior; domain permutations belong primarily in native, service, or API tests ([testing-evolution.md:115](../../../docs/testing-evolution.md#L115)).
 
 ## Change-sensitive scenarios

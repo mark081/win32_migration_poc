@@ -79,6 +79,10 @@ namespace ToolLending.AppServer.FeatureTests
                 "checkout decision repository read is side effect free",
                 DecisionRepositoryReadIsSideEffectFree
             );
+            Run(
+                "migration mode matrix preserves database state",
+                MigrationModeMatrixPreservesDatabaseState
+            );
             Run("checkout decision isolates telemetry failure", DecisionIsolatesTelemetryFailure);
             Console.WriteLine(
                 failures == 0
@@ -1068,6 +1072,77 @@ namespace ToolLending.AppServer.FeatureTests
             service.Decide(request, Guid.NewGuid());
 
             Equal(before, CaptureDatabaseState(connectionString));
+        }
+
+        // Runs disabled, Legacy, compare, and service decisions against the same synthetic database
+        // fixture. Decision reads may emit telemetry, but no mode may write workflow, retry, or
+        // business-audit state; PostgreSQL remains the only checkout writer.
+        private static void MigrationModeMatrixPreservesDatabaseState()
+        {
+            var connectionString = TestConnectionString();
+            var businessDate = ReadDatabaseBusinessDate(connectionString);
+            var before = CaptureDatabaseState(connectionString);
+
+            foreach (
+                var capability in new[]
+                {
+                    Capability(false, CheckoutRuleMode.Legacy, "PARENT_DISABLED"),
+                    Capability(true, CheckoutRuleMode.Legacy, "LEGACY"),
+                    Capability(true, CheckoutRuleMode.Compare, "COMPARE"),
+                    Capability(true, CheckoutRuleMode.Service, "SERVICE"),
+                }
+            )
+            {
+                var telemetry = new InMemoryConnectedTelemetrySink();
+                var service = new CheckoutDecisionService(
+                    new FixedEvaluator(capability),
+                    new Repository(connectionString),
+                    new CheckoutRuleEvaluator(),
+                    new FixedBusinessDateClock(businessDate),
+                    telemetry
+                );
+                var request = DecisionRequest();
+                request.MemberId = 1;
+                request.DueOn = businessDate.AddDays(1);
+                if (capability.CheckoutRuleMode == CheckoutRuleMode.Compare)
+                {
+                    request.LegacyObservation = new LegacyCheckoutObservation
+                    {
+                        ContractVersion = 1,
+                        Allowed = true,
+                        Reason = CheckoutDecisionReasons.Allowed,
+                    };
+                }
+
+                if (
+                    !capability.ConnectedEnabled
+                    || capability.CheckoutRuleMode == CheckoutRuleMode.Legacy
+                )
+                {
+                    try
+                    {
+                        service.Decide(request, Guid.NewGuid());
+                        throw new InvalidOperationException("expected Legacy routing rejection");
+                    }
+                    catch (CapabilityStaleException) { }
+                }
+                else
+                {
+                    var response = service.Decide(request, Guid.NewGuid());
+                    Equal(
+                        capability.CheckoutRuleMode.ToString().ToLowerInvariant(),
+                        response.EffectiveMode
+                    );
+                    Equal(true, response.Allowed);
+                }
+
+                Equal(2, telemetry.FlagEvaluations.Count);
+                Equal(
+                    capability.CheckoutRuleMode == CheckoutRuleMode.Compare ? 1 : 0,
+                    telemetry.RuleComparisons.Count
+                );
+                Equal(before, CaptureDatabaseState(connectionString));
+            }
         }
 
         // Proves the production failure-isolating wrapper preserves a completed decision.

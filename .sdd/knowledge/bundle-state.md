@@ -8,8 +8,8 @@ generated:
   by: analyze-brownfield-context/1.0
   at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
-source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
+source_revision: e83f34f7b78525afe5ded64b61c785176c58f0c6
+source_fingerprint: 158d4ba6c2507188982256829a775edf51f7b072c2d5c8d1f8c78009445477fe
 source_worktree: dirty
 curation_status: generated
 ---
@@ -123,3 +123,20 @@ Graphify extraction produced 246 nodes and 438 edges. Its C++ parser did not ext
   an active unlocked RDP run passed all 9 FlaUI tests after the documented synthetic-data reset.
   Reconciled fingerprint:
   `b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38`.
+
+## Wave 9 update disposition
+
+- Revised: build/test operations for the deterministic real-database mode matrix, stable client
+  failure-presentation table, clearer FlaUI diagnostics, and the Connected operations guide.
+- Unchanged after verification: system overview, runtime components, API interface, data ownership,
+  Connected feature-gate policy, constraints, hotspots and risks, glossary, and open questions.
+  Wave 9 adds verification and operating guidance only; it changes no runtime route, workflow,
+  database schema, data owner, feature semantics, or security boundary.
+- Graph refresh: `graphify update .` rebuilt 871 nodes and 1,703 edges. The existing
+  `NativeRules.h` partial-extraction warning remains and direct source/test evidence covers it.
+- Pre-update manifest diff: added `docs/connected-operations.md`; modified README, testing
+  evolution, feature/native/FlaUI tests. Reconciled fingerprint:
+  `158d4ba6c2507188982256829a775edf51f7b072c2d5c8d1f8c78009445477fe`.
+- Interactive evidence: an active unlocked RDP run passed all 9 FlaUI tests in 2 seconds with no
+  failures or skips after resetting the synthetic fixture. No source changed after the reconciled
+  manifest was written.

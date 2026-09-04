@@ -190,6 +190,12 @@ Retain all Legacy suites and add:
 - UI tests proving connected failures are understandable and do not corrupt local state.
 - Client harness checks proving service mode bypasses NativeRules and member policy fields, accepts
   only the versioned service reason table, and maps every stable denial to safe operator text.
+- A deterministic service matrix proving disabled, Legacy, compare, and service decisions leave
+  workflow, idempotency, and business-audit state unchanged while emitting the expected safe mode
+  and comparison telemetry.
+- Client failure-presentation checks for configuration, timeout, unavailable, authentication,
+  authorization, validation, conflict, and unexpected categories. Reset seeded demo data before
+  FlaUI checkout tests so the characterized member remains eligible for confirmation.
 - Performance baselines for representative read and write operations over the network.
 
 Promotion criterion: the same input dataset and workflow matrix produce equivalent API outcomes,

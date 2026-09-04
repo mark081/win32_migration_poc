@@ -316,6 +316,10 @@ operator confirmation before the unchanged idempotent checkout command, and Post
 that command if state changed after the decision. Disabling or invalidating the parent/child
 capability returns subsequent attempts to the retained Legacy path.
 
+See [Connected checkout operations](docs/connected-operations.md) for snapshot publication,
+endpoint and credential configuration, telemetry fields, compatibility, rollback timing, and the
+local/Connected verification procedure.
+
 ## Build and run
 
 Windows 11 Pro is the recommended development host, including when VS Code connects remotely from macOS. The API can run in console mode during development, so installing a Windows service is optional. See the [Windows 11 Pro and VS Code setup guide](docs/windows-11-pro-setup.md).

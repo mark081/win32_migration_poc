@@ -22,8 +22,8 @@ generated:
   by: analyze-brownfield-context/1.0
   at: 2026-09-04T02:50:11+00:00
 status: draft
-source_revision: abfa05c4e2f2554280a05f173ad8795452ab41a1
-source_fingerprint: b906083c8b29b6cfcf3a1a53d5c57116a64f5e8dfc33b5eb2577817b28777e38
+source_revision: e83f34f7b78525afe5ded64b61c785176c58f0c6
+source_fingerprint: 158d4ba6c2507188982256829a775edf51f7b072c2d5c8d1f8c78009445477fe
 source_worktree: dirty
 curation_status: generated
 ---
